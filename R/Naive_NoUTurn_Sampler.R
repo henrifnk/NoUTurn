@@ -9,26 +9,41 @@
 #'
 #TODO: calculate posterior from data up to normalization constant
 naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123L) {
-  position <- list(position_init)
+  position <- position_init
   set.seed(seed)
-  for(m in 1:iteration) {
-    position_leftm <- position_rightm <- position[[m]]
-    momentum <- momentum_leftm <- momentum_rightm <- rnorm(length(position[[m]]))
-    slice <- runif(1L, max = joint_probability(position[[m]], momentum))
-    # 1 means True, 0 means False
-    run <- 1L
-    tree_depth = 0L
-    valid_states <- list("position" = position[[m]], "momtentum" = momentum)
-    while(run) {
+  for(m in 1:(iteration + 1)) {
+    momentum <- rnorm(length(position))
+    slice <- runif(1L, max = joint_probability(position, momentum))
+    valid_states <- structure(vector("list", length = 2L), names= c("position", "momentum"))
+    # Initialize state to call on Build Tree
+    state <- initialize_state(position, momentum, slice, stepsize)
+
+    while(state$run) {
       # 1 means forward, -1 means backward doubling
-      direction <- sample(c(-1, 1), 1L)
-
-
+      state$direction <- sample(c(-1, 1), 1L)
+      state1 <- build_trees(state)
 
    }
   }
 }
 
+#'  Joint Probability of position and momentum
+#'  @inheritParams leapfrog
+#'
 joint_probability <- function(position, momentum) {
-  exp(log(posterior_density(position)) - 0.5 * t(momentum) %*% momentum)
+  as.numeric(exp(log(posterior_density(position)) - 0.5 * t(momentum) %*% momentum))
+}
+
+#' Initialize state
+#'
+#' Helperfunction to intialize state
+#' @inheritParams leapfrog
+#' @inheritParams build_tree
+initialize_state <- function(position, momentum, slice, stepsize) {
+  list(
+    "run" = 1L, "tree_depth" = 0L, "slice_sample" = slice, "direction" = 0L, "stepsize" = stepsize,
+    "state_ritghmost"= list("position" = position, "momentum" = momentum),
+    "state_leftmost" = list("position" = position, "momentum" = momentum),
+    "valid_state" = valid_states
+  )
 }

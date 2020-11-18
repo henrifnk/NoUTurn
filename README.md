@@ -46,5 +46,5 @@ Proposed Structure
 		b) effective NUTS algorithm
 	5) Introduce "on the fly" tuning of stepsize
 	6) Synthetic simple examples for Regression and Classification
-		a) Benchmarking algorthims (traceplots etc) => Pros and Cons
-	7) RealWorld example
+		a) Benchmarking algorthims (traceplots, convergence diagnostic etc) => Pros and Cons
+	7) RealWorld example/ Maybe little outlook on apllications like Stan!?

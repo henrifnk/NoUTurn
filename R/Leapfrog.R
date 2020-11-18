@@ -8,7 +8,7 @@
 #'
 #' @return
 #'
-leapfrog <- function(position, momentum, stepsize, log_posterior) {
+leapfrog <- function(position, momentum, stepsize) {
   gradient <- gradient_approx(position)
   momentum = momentum + (stepsize / 2) * gradient
   position = position + stepsize * momentum
