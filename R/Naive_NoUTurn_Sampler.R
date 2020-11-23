@@ -9,25 +9,33 @@
 #' @return
 #'
 #TODO: calculate posterior from data up to normalization constant
-naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123L) {
+naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, seed = 123L, plot = FALSE) {
+  set.seed(seed)
+  if(is.null(stepsize)) stepsize <- find_initial_stepsize(position_init)
   position <- position_init
   positions <- vector("list", iteration)
-  set.seed(seed)
-  for(m in 1L:(iteration + 1L)) {
+  for(m in 1L:(iteration)) {
     momentum <- rnorm(length(position))
     slice <- runif(1L, max = joint_probability(position, momentum))
-    valid_states <- structure(vector("list", length = 2L), names= c("position", "momentum"))
     # Initialize state to call on Build Tree
-    state <- initialize_state(position, momentum, slice, stepsize)
+    state <- initialize_state(position, momentum)
     tree_depth <- 0L
+    setup <- if(plot) setup_trajectory(position) else NULL
     while(state$run) {
       # 1 means forward, -1 means backward doubling
-      state$direction <- sample(c(-1L, 1L), 1L)
-      state_proposal <- build_tree(state, tree_depth)
+      direction <- sample(c(-1L, 1L), 1L)
+      state_proposal <- if(direction == -1) {
+        build_tree(state$leftmost, slice, direction, tree_depth, stepsize)
+      } else{
+        build_tree(state$rightmost, slice, direction, tree_depth, stepsize)
+      }
+      if(!is.null(setup)) setup <- plot_proposal(state_proposal$valid_state$position, setup)
       if(state_proposal$run) {
-        if(state_proposal$direction == -1 && is.matrix(state_proposal$valid_state$position)) {
-          # Sort backward doubled trajectory reversely
-          state_proposal$valid_state <- lapply(state_proposal$valid_state, function(x) apply(x, 2, rev))
+        if(direction == -1) {
+          if(is.matrix(state_proposal$valid_state$position)) {
+            # Sort backward doubled trajectory reversely
+            state_proposal$valid_state <- lapply(state_proposal$valid_state, function(x) apply(x, 2, rev))
+          }
           state$leftmost <- state_proposal$leftmost
           state$valid_state <- unite_valid_states(state_proposal, state)
         } else{
@@ -38,9 +46,10 @@ naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123
       state$run <- state_proposal$run * is_U_turn(state = state)
       tree_depth <- tree_depth + 1
       state$valid_state
+      print(tree_depth)
     }
     row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
-    positions[[m]] = state$valid_state$position[[row_id, ]]
+    positions[[m]] = state$valid_state$position[row_id, ]
   }
 }
 #_______________________________________________________________________________
@@ -57,11 +66,10 @@ joint_probability <- function(position, momentum) {
 #' @inheritParams leapfrog
 #' @param slice slice sample drawn in U-Turn-Sampler
 #' @inheritParams naive_nouturn_sampler
-initialize_state <- function(position, momentum, slice, stepsize) {
+initialize_state <- function(position, momentum, run = 1L) {
   list(
-    "run" = 1L, "slice_sample" = slice, "direction" = 0L, "stepsize" = stepsize,
+    "valid_state" = structure(vector("list", length = 2L), names= c("position", "momentum")),
     "rightmost"= list("position" = position, "momentum" = momentum),
-    "leftmost" = list("position" = position, "momentum" = momentum),
-    "valid_state" = valid_states
+    "leftmost" = list("position" = position, "momentum" = momentum),  "run" = run
   )
 }

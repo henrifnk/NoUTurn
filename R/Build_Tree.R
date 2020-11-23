@@ -13,13 +13,19 @@
 #'
 #' @return
 #'
-build_tree <- function(state, tree_depth, deltamax = 1000L) {
-  if(tree_depth == 0L) {
-    build_leaf(state, deltamax) # Basecase - take one leapfrogstep into direction
-    } else {
-      # Recursion- build left/right subtrees
-      state1 <- build_tree(state, tree_depth-1L, deltamax)
-      state <- build_tree(state1, tree_depth-1L, deltamax)
+build_tree <- function(position_momentum, slice, direction,
+                       tree_depth, stepsize, deltamax = 1000L) {
+  if(tree_depth == 0L) {# Basecase - take one leapfrogstep into direction
+    build_leaf(position_momentum, slice, direction, tree_depth, stepsize, deltamax)
+    } else {# Recursion- build left/right subtrees
+      state <- build_tree(position_momentum, slice, direction, tree_depth - 1L, stepsize)
+      if(direction == -1L) {
+        state1 <- build_tree(state$leftmost, slice, direction, tree_depth - 1L, stepsize)
+        position_momentum  <- state$leftmost <- state1$leftmost
+      } else {
+        state1 <- build_tree(state$rightmost, slice, direction, tree_depth - 1L, stepsize)
+        position_momentum  <- state$rightmost <- state1$rightmost
+      }
       # if any state is 0 Stopping criteria is triggered for trajectory iterations
       state$run <- state1$run * state$run * is_U_turn(state)
       state$valid_state <- unite_valid_states(state1, state)
@@ -32,18 +38,13 @@ build_tree <- function(state, tree_depth, deltamax = 1000L) {
 #' Builds one tree doing a leapfrogstep in one direction
 #'
 #' @inheritParams build_tree
-build_leaf <- function(state, deltamax) {
-  proposal_state <- if(state$direction == -1) {
-    state$leftmost <- do.call(leapfrog, c(state$leftmost,
-                                          "stepsize" = (state$direction * state$stepsize)))
-  } else {
-    state$rightmost <-  do.call(leapfrog, c(state$rightmost,
-                                            "stepsize" = (state$direction * state$stepsize)))
-  }
-  proposal_density <- do.call(joint_probability, proposal_state)
-  if(state$slice <= proposal_density) state$valid_state <- proposal_state
-  state$run <- 0 + (proposal_density > (log(state$slice) - deltamax))
-  state
+build_leaf <- function(position_momentum, slice, direction, tree_depth, stepsize, deltamax) {
+  step <- do.call(leapfrog, c(position_momentum, "stepsize" = (direction * stepsize)))
+  proposal_state <- do.call(initialize_state, step)
+  proposal_density <- do.call(joint_probability, step)
+  if(slice <= proposal_density) proposal_state$valid_state <- step
+  proposal_state$run <- 0 + (proposal_density > (log(slice) - deltamax))
+  proposal_state
 }
 # ______________________________________________________________________________
 #' Is a U Turn made?
@@ -63,7 +64,7 @@ is_U_turn <- function(state, direction) {
 #'
 #' unites 2 valid state sets in second state set
 unite_valid_states <- function(state1, state2) {
-  state2$valid_state$position <- unique(rbind(state1$valid_state$position, state2$valid_state$position))
-  state2$valid_state$momentum <- unique(rbind(state1$valid_state$momentum, state2$valid_state$momentum))
+  state2$valid_state$position <- rbind(state1$valid_state$position, state2$valid_state$position)
+  state2$valid_state$momentum <- rbind(state1$valid_state$momentum, state2$valid_state$momentum)
   state2$valid_state
 }
