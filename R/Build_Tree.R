@@ -42,8 +42,8 @@ build_leaf <- function(position_momentum, slice, direction, tree_depth, stepsize
   step <- do.call(leapfrog, c(position_momentum, "stepsize" = (direction * stepsize)))
   proposal_state <- do.call(initialize_state, step)
   proposal_density <- do.call(joint_probability, step)
-  if(slice <= proposal_density) proposal_state$valid_state <- step
-  proposal_state$run <- 0 + (proposal_density > (log(slice) - deltamax))
+  if(slice <= exp(proposal_density)) proposal_state$valid_state <- step
+  proposal_state$run <- 0 + (proposal_density > log(slice) - deltamax)
   proposal_state
 }
 # ______________________________________________________________________________
@@ -51,12 +51,12 @@ build_leaf <- function(position_momentum, slice, direction, tree_depth, stepsize
 #'
 #' Investigates if trajectory makes a U-Turn (if >= 0)
 #' @inheritParams build_tree
-is_U_turn <- function(state, direction) {
+is_U_turn <- function(state) {
   momentum_l <- state$leftmost$momentum
   momentum_r <- state$rightmost$momentum
   position_distance <- state$rightmost$position - state$leftmost$position
-  left <- as.numeric((t(momentum_l) %*% position_distance)) >= 0
-  right <- as.numeric((t(momentum_r) %*% position_distance)) >= 0
+  left <- as.numeric((t(momentum_l) %*% as.numeric(position_distance))) >= 0
+  right <- as.numeric((t(momentum_r) %*% as.numeric(position_distance))) >= 0
   left * right
 }
 # ______________________________________________________________________________

@@ -16,5 +16,5 @@ find_initial_stepsize <- function(position_init) {
 }
 # ______________________________________________________________________________
 acceptance_rate <- function(position_init, momentum, proposal) {
-  do.call(joint_probability, proposal) / joint_probability(position_init, momentum)
+  exp(do.call(joint_probability, proposal)) / exp(joint_probability(position_init, momentum))
 }

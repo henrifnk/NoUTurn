@@ -13,14 +13,14 @@ naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, see
   set.seed(seed)
   if(is.null(stepsize)) stepsize <- find_initial_stepsize(position_init)
   position <- position_init
-  positions <- vector("list", iteration)
+  positions <- data.frame(matrix(ncol = length(position_init), nrow = iteration))
   for(m in 1L:(iteration)) {
     momentum <- rnorm(length(position))
-    slice <- runif(1L, max = joint_probability(position, momentum))
+    slice <- runif(1L, max = exp(joint_probability(position, momentum)))
     # Initialize state to call on Build Tree
     state <- initialize_state(position, momentum)
     tree_depth <- 0L
-    setup <- if(plot) setup_trajectory(position) else NULL
+    setup <- if(plot) setup_trajectory(position, positions) else NULL
     while(state$run) {
       # 1 means forward, -1 means backward doubling
       direction <- sample(c(-1L, 1L), 1L)
@@ -39,25 +39,29 @@ naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, see
           state$leftmost <- state_proposal$leftmost
           state$valid_state <- unite_valid_states(state_proposal, state)
         } else{
-          state$valid_state <- unite_valid_states(state, state_proposal)
           state$rightmost <- state_proposal$rightmost
+          state$valid_state <- unite_valid_states(state, state_proposal)
         }
       }
       state$run <- state_proposal$run * is_U_turn(state = state)
       tree_depth <- tree_depth + 1
-      state$valid_state
       print(tree_depth)
     }
-    row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
-    positions[[m]] = state$valid_state$position[row_id, ]
+    if(is.matrix(state$valid_state$position)) {
+      row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
+      positions[m, ] = state$valid_state$position[row_id, ]
+      position <- positions[m, ]
+    } else position[m, ] <- position
+    m <- m + 1
   }
+
 }
 #_______________________________________________________________________________
 #'  Joint Probability of position and momentum
 #'  @inheritParams leapfrog
 #'
 joint_probability <- function(position, momentum) {
-  as.numeric(exp(log(posterior_density(position)) - 0.5 * t(momentum) %*% momentum))
+  as.numeric(log(posterior_density(position)) - 0.5 * t(momentum) %*% momentum)
 }
 #_______________________________________________________________________________
 #' Initialize state
