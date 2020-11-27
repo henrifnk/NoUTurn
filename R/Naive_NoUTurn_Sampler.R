@@ -8,7 +8,6 @@
 #' @example posterior_density = mvtnorm::dmvnorm
 #' @return
 #'
-#TODO: calculate posterior from data up to normalization constant
 naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, seed = 123L, plot = FALSE) {
   set.seed(seed)
   if(is.null(stepsize)) stepsize <- find_initial_stepsize(position_init)
@@ -47,14 +46,15 @@ naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, see
       tree_depth <- tree_depth + 1
       print(tree_depth)
     }
-    if(is.matrix(state$valid_state$position)) {
+    if(is.matrix(state$valid_state$position) || is.data.frame(state$valid_state$position)) {
       row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
-      positions[m, ] = state$valid_state$position[row_id, ]
-      position <- positions[m, ]
-    } else position[m, ] <- position
-    m <- m + 1
+      positions[m, ] <- state$valid_state$position[row_id, ]
+      position = positions[m, ]
+    } else {
+      positions[m, ] <- position
+    }
   }
-
+  positions
 }
 #_______________________________________________________________________________
 #'  Joint Probability of position and momentum

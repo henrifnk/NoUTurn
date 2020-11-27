@@ -1,8 +1,10 @@
 #' Set Up A plot for trajectory
 #'
 setup_trajectory <- function(position, valid_positions, fun_dim1 = dnorm, fun_dim2 = dnorm, limit_dim1 = c(-3, 3), limit_dim2 = c(-3, 3)){
+  library(plotly)
   library(ggplot2)
   library(gridExtra)
+
   theme_set(theme_classic() +  theme(axis.title.x = element_blank(),
                                      axis.title.y = element_blank(),
                                      axis.text.x = element_blank(),
@@ -25,8 +27,9 @@ setup_trajectory <- function(position, valid_positions, fun_dim1 = dnorm, fun_di
       panel.background = element_blank()
     )
 
-  x <- seq(from = -3, to = 3, length.out = 20)
-  grid <- expand.grid(x1 = x, y1 =x)
+  x <- seq(from = limit_dim1[1], to = limit_dim1[2], length.out = 20)
+  y <- seq(from = limit_dim2[1], to = limit_dim2[2], length.out = 20)
+  grid <- expand.grid(x1 = x, y1 = y)
   grid <- cbind(grid, z1 = apply(grid, 1, posterior_density))
 
   valid_positions = na.omit(valid_positions)
@@ -55,11 +58,13 @@ plot_proposal <- function(proposal, setup) {
     } else colnames(proposal) <- c("a", "b")
     setup[[3]]$data <- rbind(setup[[3]]$data, proposal)
   }
+
+
   grid.arrange(
-    setup[[1]], setup[[2]], setup[[3]], setup[[4]],
-    ncol=2, nrow=2, widths=c(4, 1), heights=c(1, 4)
+   setup[[1]], setup[[2]], setup[[3]], setup[[4]],
+   ncol=2, nrow=2, widths=c(4, 1), heights=c(1, 4)
   )
 
-  Sys.sleep(2)
+  Sys.sleep(1.5)
   setup
 }
