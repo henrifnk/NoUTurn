@@ -71,6 +71,9 @@ joint_probability <- function(position, momentum, design, target, is_log = TRUE)
   dens_estimate <- ifelse(is_log, do.call(posterior_density, args),
                           log(do.call(posterior_density, args))
                           )
+  if(is.nan(dens_estimate - 0.5 * t(momentum) %*% momentum)) {
+    return(0)
+  }
   as.numeric(dens_estimate - 0.5 * t(momentum) %*% momentum)
 }
 #_______________________________________________________________________________

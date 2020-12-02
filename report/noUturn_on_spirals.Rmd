@@ -1,0 +1,143 @@
+---
+title: "UseCase_LogisticRonSpirals"
+author: "Henri Funk"
+date: "2 12 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+longrun = FALSE
+
+devtools::load_all()
+library(mlbench)
+library(ggplot2)
+library(gridExtra)
+```
+
+<!--
+To recheck the code is still up to date and syntax sticks to the current mlr3 version initialize `long_run = TRUE`.
+This will run *all* code chunks no matter the computational effort.
+-->
+
+## SetUp Experiment
+
+Generate spiral data set from `mlbench` package
+Note: as sigmoid maps from $\mathbb{R}$ to binary classes $[0, 1]$ we need to respecify our target weights here.
+
+```{r, eval=longrun}
+p <- mlbench.spirals(n = 300, cycles = 1.5, sd = 0.05)
+```
+
+```{r eval=longrun, echo=FALSE}
+saveRDS(object = p, file = "spirals.RDS")
+```
+
+```{r eval=!longrun, echo=FALSE}
+p <- readRDS("spirals.RDS")
+```
+
+```{r}
+design <- cbind(1, p$x)
+target <- as.numeric(p$classes)
+target[which(target == 2)] = 0
+```
+
+
+```{r, echo=FALSE}
+spirals <- ggplot(as.data.frame(p$x), aes(x = V1, y = V2, colour = as.factor(target))) +
+  geom_point() + labs(title = "Spirals", color = "Class")
+spirals
+```
+
+Define posterior and gradient function
+
+```{r}
+posterior_density = sigmoid_posterior
+gradient = partial_deriv_sigmoid
+```
+
+
+Run `naive_nouturn_sampler` for 2000 iterations with a small stepsize of `0.2`
+As our posterior is already logged we ca specify the `is_logged` argument as `TRUE`
+
+We use a GAM with 2 position estimates indicating sinus of their true position here
+to consider spirals nonlinear structure.
+
+```{r, eval=longrun}
+start <- Sys.time()
+design_2 <- cbind(design, (design[, 2]^2), (design[, 3]^2))
+sigmoid_parameter_distrib <- naive_nouturn_sampler(c(40, -40, -90, 6, 10),
+                                                   stepsize = .2, iteration = 2e3,
+                                                   plot = FALSE, design = design_2, target = target, is_log = TRUE)
+dif2000iter <- Sys.time() - start
+dif2000iter
+```
+
+```{r eval=longrun, echo=FALSE}
+saveRDS(object = dif2000iter, file = "runtime2000iter.RDS")
+saveRDS(object = sigmoid_parameter_distrib, file = "sigmoid_parameter_distrib.RDS")
+```
+
+```{r eval=!longrun, echo=FALSE}
+readRDS("runtime2000iter.RDS")
+sigmoid_parameter_distrib <- readRDS("sigmoid_parameter_distrib.RDS")
+```
+
+## Check for convergence
+
+TRace Plot for parameters
+
+```{r}
+calculate_traceplots <- function(var, varname){
+  ggplot(data = sigmoid_parameter_distrib, aes_string(x = seq_len(2000), y = var)) +
+  geom_line() + labs(x = "iteration", y = varname) + ylim(-150, 150) +
+    annotate("rect", xmin = 1251, xmax = 2000, ymin = -150, ymax = 150, alpha = .2)
+}
+
+args <- list(list(var = "X2", varname = "slope1"), list(var = "X4", varname = "squared slope1"),
+             list(var = "X3", varname = "slope2"), list(var = "X5", varname = "squared slope2"),
+             list(var = "X1", varname = "intercept")
+             )
+traceplots <- lapply(args, function(x) do.call(calculate_traceplots, x))
+
+do.call(grid.arrange, c(traceplots, nrow = 3))
+
+```
+
+Slopes seem to converge after 1000 to 1250 iterations, while intercept is already quite stable from the beginning.
+
+\rightarrow Leave out first 1250 iterations as burn in and calculate position estimates means and variance
+
+```{r}
+burn_in <- 1250
+sigmoid_valid <- sigmoid_parameter_distrib[-seq_len(burn_in), 1:5]
+
+position_mean <- colMeans(sigmoid_valid)
+position_sd <- apply(sigmoid_valid, MARGIN = 2, var)
+```
+
+## Check Modell
+
+```{r}
+sigmoid_map <- function(x) {
+  1 / (1 + exp(-x))
+}
+
+max <- apply(design[, 2:3], 2, max)
+min <- apply(design[, 2:3], 2, min)
+dim1 <- seq(from = min[1], to = max[1], length.out = 20)
+dim2 <- seq(from = min[2], to = max[2], length.out = 20)
+grid <- cbind(1, expand.grid("dim1" = dim1, "dim2" = dim2),
+              "sin1" = sin(dim1), "sin2" = sin(dim2))
+grid <- as.matrix(grid)
+
+estimates <- sigmoid_map(design_2 %*% position_mean)
+
+spirals
+
+
+spirals+
+  geom_raster(data = as.data.frame(grid), aes(x = dim1, y = dim2, fill = estimates))
+```
+

@@ -19,13 +19,13 @@
 #' target[which(target == 2)] = 0
 #' position <- rnorm(3)
 #' @return unnormalized log posterior density value
-sigmoid_posterior <- function(position, design = NULL, target = NULL, sigma = 50L) {
+sigmoid_posterior <- function(position, design = NULL, target = NULL, sigma = 200L) {
   if(is.data.frame(position)) position <- as.numeric(position)
   log_lik <- log(1 + exp((-target) %*% (design %*% position)))
   posterior <- (-log_lik - (1 / (2 * sigma ^ 2)) * t(position) %*% position)
+  if(is.na(posterior)) return(-Inf)
   as.numeric(posterior)
 }
-posterior_density = sigmoid_posterior
 
 #' @inheritParams sigmoid_posterior
 #'
@@ -39,4 +39,3 @@ partial_deriv_sigmoid <- function(position, design = NULL, target = NULL, sigma 
     as.numeric(numerator / denominator -penalizer)
   })
 }
-gradient = partial_deriv_sigmoid
