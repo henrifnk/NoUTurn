@@ -8,13 +8,14 @@
 #'
 #' @return
 #'
-leapfrog <- function(position, momentum, stepsize) {
-  gradient <- gradient_approx(position)
+leapfrog <- function(position, momentum, stepsize, gradient) {
   momentum <- momentum + (stepsize / 2) * gradient
   position <- position + stepsize * momentum
   momentum <- momentum + (stepsize / 2) * gradient
   return(list("position" = position, "momentum" = momentum))
 }
+
+
 #_______________________________________________________________________________
 #' Gradient Approx
 #'
@@ -24,8 +25,8 @@ leapfrog <- function(position, momentum, stepsize) {
 #' @param delta absolute range to each side of x
 #' @param n size of samples where function should be evaluated
 #'
-gradient_approx = function(x, delta = 1e-5, n = 3){
+gradient_approx = function(x, delta = 1e-3, n = 3){
  x <- sapply(x, function(x) seq(from = x - delta, to = x + delta, length.out = max(2, n)))
- y <- apply(x, MARGIN = 1, function(x) posterior_density(x))
+ y <- apply(x, MARGIN = 2, function(x) posterior_density(x))
  mean(diff(y)/diff(x))
 }

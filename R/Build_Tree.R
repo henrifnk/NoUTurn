@@ -14,16 +14,16 @@
 #' @return
 #'
 build_tree <- function(position_momentum, slice, direction,
-                       tree_depth, stepsize, deltamax = 1000L) {
+                       tree_depth, stepsize, design = NULL, target = NULL, deltamax = 1000L) {
   if(tree_depth == 0L) {# Basecase - take one leapfrogstep into direction
-    build_leaf(position_momentum, slice, direction, tree_depth, stepsize, deltamax)
+    build_leaf(position_momentum, slice, direction, tree_depth, stepsize, deltamax, design, target)
     } else {# Recursion- build left/right subtrees
-      state <- build_tree(position_momentum, slice, direction, tree_depth - 1L, stepsize)
+      state <- build_tree(position_momentum, slice, direction, tree_depth - 1L, stepsize, design, target)
       if(direction == -1L) {
-        state1 <- build_tree(state$leftmost, slice, direction, tree_depth - 1L, stepsize)
+        state1 <- build_tree(state$leftmost, slice, direction, tree_depth - 1L, stepsize, design, target)
         position_momentum  <- state$leftmost <- state1$leftmost
       } else {
-        state1 <- build_tree(state$rightmost, slice, direction, tree_depth - 1L, stepsize)
+        state1 <- build_tree(state$rightmost, slice, direction, tree_depth - 1L, stepsize, design, target)
         position_momentum  <- state$rightmost <- state1$rightmost
       }
       # if any state is 0 Stopping criteria is triggered for trajectory iterations
@@ -38,10 +38,16 @@ build_tree <- function(position_momentum, slice, direction,
 #' Builds one tree doing a leapfrogstep in one direction
 #'
 #' @inheritParams build_tree
-build_leaf <- function(position_momentum, slice, direction, tree_depth, stepsize, deltamax) {
-  step <- do.call(leapfrog, c(position_momentum, "stepsize" = (direction * stepsize)))
+build_leaf <- function(position_momentum, slice, direction, tree_depth, stepsize, deltamax,
+                       design = NULL, target = NULL) {
+  args <- if(is.null(design) && is.null(target)) {
+    list(position_momentum$position)
+  } else list(position_momentum$position, design, target)
+  gradient_step <- do.call(gradient, args)
+  step <- leapfrog(position_momentum$position, position_momentum$momentum,
+                   stepsize = (direction * stepsize), gradient = gradient_step)
   proposal_state <- do.call(initialize_state, step)
-  proposal_density <- do.call(joint_probability, step)
+  proposal_density <- do.call(joint_probability, c(step, list(design), list(target)))
   if(slice <= exp(proposal_density)) proposal_state$valid_state <- step
   proposal_state$run <- 0 + (proposal_density > log(slice) - deltamax)
   proposal_state

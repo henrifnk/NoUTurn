@@ -1,21 +1,27 @@
 #' Naive U-Turn-Sampler
 #'
-#' @param theta_init initial value for theta
-#' @param joint_prob log of joint density probability
+#' @param position_init initial value for theta
+#' @param stepsize size \epsilon for leapfrog steps
 #' @param iteration number of iterations to sample from
-#' @param stepsize size for leapfrog steps
 #' @param seed set a random seed to guarantee reproducability
+#' @param plot if plot of trajectory should be done.
+#' This only makes sense for presentation matters as plotting takes a long time.
+#' @param design a design matrix, if posterior is a model
+#' @param target a target feature vector if posterior is a model
+#' @param is_log if the likelyhood is already logged
 #' @example posterior_density = mvtnorm::dmvnorm
+#' posterior_density = sigmoid_posterior
 #' @return
 #'
-naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, seed = 123L, plot = FALSE) {
+naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123L, plot = FALSE,
+                                  design = NULL, target = NULL, is_log = TRUE) {
   set.seed(seed)
-  if(is.null(stepsize)) stepsize <- find_initial_stepsize(position_init)
   position <- position_init
   positions <- data.frame(matrix(ncol = length(position_init), nrow = iteration))
+  tree_depths <- vector("numeric", length = iteration)
   for(m in 1L:(iteration)) {
     momentum <- rnorm(length(position))
-    slice <- runif(1L, max = exp(joint_probability(position, momentum)))
+    slice <- runif(1L, max = exp(joint_probability(position, momentum, design, target, is_log = is_log)))
     # Initialize state to call on Build Tree
     state <- initialize_state(position, momentum)
     tree_depth <- 0L
@@ -24,9 +30,9 @@ naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, see
       # 1 means forward, -1 means backward doubling
       direction <- sample(c(-1L, 1L), 1L)
       state_proposal <- if(direction == -1) {
-        build_tree(state$leftmost, slice, direction, tree_depth, stepsize)
+        build_tree(state$leftmost, slice, direction, tree_depth, stepsize, design, target)
       } else{
-        build_tree(state$rightmost, slice, direction, tree_depth, stepsize)
+        build_tree(state$rightmost, slice, direction, tree_depth, stepsize, design, target)
       }
       if(!is.null(setup)) setup <- plot_proposal(state_proposal$valid_state$position, setup)
       if(state_proposal$run) {
@@ -44,8 +50,8 @@ naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, see
       }
       state$run <- state_proposal$run * is_U_turn(state = state)
       tree_depth <- tree_depth + 1
-      print(tree_depth)
     }
+    tree_depths[m] <- tree_depth
     if(is.matrix(state$valid_state$position) || is.data.frame(state$valid_state$position)) {
       row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
       positions[m, ] <- state$valid_state$position[row_id, ]
@@ -54,14 +60,18 @@ naive_nouturn_sampler <- function(position_init, stepsize = NULL, iteration, see
       positions[m, ] <- position
     }
   }
-  positions
+  cbind(positions, "tree_depth" = tree_depths)
 }
 #_______________________________________________________________________________
 #'  Joint Probability of position and momentum
 #'  @inheritParams leapfrog
 #'
-joint_probability <- function(position, momentum) {
-  as.numeric(log(posterior_density(position)) - 0.5 * t(momentum) %*% momentum)
+joint_probability <- function(position, momentum, design, target, is_log = TRUE) {
+  args <- if(is.null(design) && is.null(target)) list(position) else list(position, design, target)
+  dens_estimate <- ifelse(is_log, do.call(posterior_density, args),
+                          log(do.call(posterior_density, args))
+                          )
+  as.numeric(dens_estimate - 0.5 * t(momentum) %*% momentum)
 }
 #_______________________________________________________________________________
 #' Initialize state

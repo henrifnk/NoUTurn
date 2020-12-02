@@ -1,9 +1,14 @@
 #' Set Up A plot for trajectory
 #'
 setup_trajectory <- function(position, valid_positions, fun_dim1 = dnorm, fun_dim2 = dnorm, limit_dim1 = c(-3, 3), limit_dim2 = c(-3, 3)){
-  library(plotly)
   library(ggplot2)
   library(gridExtra)
+
+  if(ncol(valid_positions) > 2L) {
+    # Extract 2 dimensional position space from arbitrary big Data Set
+    valid_positions_2D <- valid_positions[, 1L:2L]
+    position_2D <- if(is.null(dim(position))) position[1L:2L] else position[, 1L:2L]
+  }
 
   theme_set(theme_classic() +  theme(axis.title.x = element_blank(),
                                      axis.title.y = element_blank(),
@@ -32,18 +37,18 @@ setup_trajectory <- function(position, valid_positions, fun_dim1 = dnorm, fun_di
   grid <- expand.grid(x1 = x, y1 = y)
   grid <- cbind(grid, z1 = apply(grid, 1, posterior_density))
 
-  valid_positions = na.omit(valid_positions)
-  if(!is.data.frame(position)) position <- as.data.frame(t(position))
-  position = setNames(position, c("a", "b"))
+  valid_positions_2D = na.omit(valid_positions_2D)
+  if(!is.data.frame(position_2D)) position_2D <- as.data.frame(t(position_2D))
+  position_2D = setNames(position_2D, c("a", "b"))
 
-  scatter_plot <- ggplot(data = position, aes(a, b)) +
+  scatter_plot <- ggplot(data = position_2D, aes(a, b)) +
     stat_contour(alpha = 0.5, data = grid, aes(x = x1, y = y1, z = z1)) +
     geom_point(size = 1L) +
     xlim(limit_dim1) +
     ylim(limit_dim2)
 
-  if(nrow(valid_positions) > 0L) {
-    scatter_plot <- scatter_plot + geom_point(data = valid_positions, aes(X1, X2), colour = 'green')
+  if(nrow(valid_position_2Ds) > 0L) {
+    scatter_plot <- scatter_plot + geom_point(data = valid_positions_2D, aes(X1, X2), colour = 'green')
   }
   list(density1, blank_plot, scatter_plot, density2)
 
