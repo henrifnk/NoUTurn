@@ -9,7 +9,10 @@
 #' @param design a design matrix, if posterior is a model
 #' @param target a target feature vector if posterior is a model
 #' @param is_log if the likelyhood is already logged
-#' @example posterior_density = mvtnorm::dmvnorm
+#' @example
+#' posterior_density = mvtnorm::dmvnorm
+#' gradient <- function(position){-position}
+#'
 #' posterior_density = sigmoid_posterior
 #' @return
 #'
@@ -70,7 +73,7 @@ naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123
 #'  Joint Probability of position and momentum
 #'  @inheritParams leapfrog
 #'
-joint_probability <- function(position, momentum, design, target, is_log = TRUE) {
+joint_probability <- function(position, momentum, design = NULL, target = NULL, is_log = TRUE) {
   args <- if(is.null(design) && is.null(target)) list(position) else list(position, design, target)
   dens_estimate <- ifelse(is_log, do.call(posterior_density, args),
                           log(do.call(posterior_density, args))
@@ -84,10 +87,17 @@ joint_probability <- function(position, momentum, design, target, is_log = TRUE)
 #' @inheritParams leapfrog
 #' @param slice slice sample drawn in U-Turn-Sampler
 #' @inheritParams naive_nouturn_sampler
-initialize_state <- function(position, momentum, run = 1L) {
-  list(
-    "valid_state" = structure(vector("list", length = 2L), names= c("position", "momentum")),
-    "rightmost"= list("position" = position, "momentum" = momentum),
-    "leftmost" = list("position" = position, "momentum" = momentum),  "run" = run
-  )
+initialize_state <- function(position, momentum, run = 1L, efficient = FALSE) {
+  efficient <- if(efficient){
+    list("count" = 0, "acceptance" = list("acceptance" = 0, "nacceptance" = 1))
+  } else NULL
+
+  c(
+    list(
+      "valid_state" = structure(vector("list", length = 2L), names= c("position", "momentum")),
+      "rightmost"= list("position" = position, "momentum" = momentum),
+      "leftmost" = list("position" = position, "momentum" = momentum),  "run" = run
+      ), efficient
+    )
+
 }
