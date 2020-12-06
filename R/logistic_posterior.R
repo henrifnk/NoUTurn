@@ -21,9 +21,8 @@
 #' @return unnormalized log posterior density value
 sigmoid_posterior <- function(position, design = NULL, target = NULL, sigma = 200L) {
   if(is.data.frame(position)) position <- as.numeric(position)
-  log_lik <- log(1 + exp((-target) %*% (design %*% position)))
-  posterior <- (-log_lik - (1 / (2 * sigma ^ 2)) * t(position) %*% position)
-  if(is.na(posterior)) return(-Inf)
+  log_lik <- log(((1 + exp((-target) %*% (design %*% position))))^(-1))
+  posterior <- (log_lik - ((2 * sigma ^ 2) ^(-1)) * t(position) %*% position)
   as.numeric(posterior)
 }
 
@@ -31,11 +30,11 @@ sigmoid_posterior <- function(position, design = NULL, target = NULL, sigma = 20
 #'
 partial_deriv_sigmoid <- function(position, design = NULL, target = NULL, sigma = 200L) {
   if(is.data.frame(position)) position <- as.numeric(position)
-  sigmoid_exp <- exp((-1 * target) %*% (design %*% position))
+  sigmoid_exp <- exp((target) %*% (design %*% position))
   sapply(seq_len(length(position)), function(x) {
-    numerator <- (t(target) %*% design[,x]) * sigmoid_exp
+    numerator <- (t(target) %*% design[,x])
     denominator <- 1 + sigmoid_exp
     penalizer <- position[x] / sigma
-    as.numeric(numerator / denominator -penalizer)
+    as.numeric(numerator / denominator - penalizer)
   })
 }

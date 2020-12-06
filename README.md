@@ -43,6 +43,15 @@ Stan:A Probabilistic Programmin Language
   Topics: Stanis a probabilistic programming language for specifying statistical models
   Link: http://www.stat.columbia.edu/~gelman/research/published/stan-paper-revision-feb2015.pdf
   
+Regression (Fahrmeir, 2013)
+  Topics: Bayesian Generalized Regression
+  
+MCMC Interactive Gallery (Chi Feng, 2016)
+  Topics: Vizualization of different MCMC algorithms
+  Link: https://chi-feng.github.io/mcmc-demo/app.html?algorithm=MALA&target=banana
+
+
+
 ## Proposed Structure
 	
 	1) Brief Intro to MH-Algorithms random walk vs. HMC Idea of supressing local random walk behavior

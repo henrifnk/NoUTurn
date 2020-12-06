@@ -14,11 +14,12 @@
 #' @return
 #'
 build_tree <- function(position_momentum, slice, direction,
-                       tree_depth, stepsize, design = NULL, target = NULL, deltamax = 1000L) {
+                       tree_depth, stepsize, design = NULL, target = NULL, deltamax = 250L) {
   if(tree_depth == 0L) {# Basecase - take one leapfrogstep into direction
     build_leaf(position_momentum, slice, direction, tree_depth, stepsize, deltamax, design, target)
     } else {# Recursion- build left/right subtrees
       state <- build_tree(position_momentum, slice, direction, tree_depth - 1L, stepsize, design, target)
+      if(anyNA((state$run))) browser()
       if(direction == -1L) {
         state1 <- build_tree(state$leftmost, slice, direction, tree_depth - 1L, stepsize, design, target)
         position_momentum  <- state$leftmost <- state1$leftmost

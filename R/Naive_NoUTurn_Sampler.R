@@ -13,12 +13,14 @@
 #' posterior_density = sigmoid_posterior
 #' @return
 #'
-naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123L, plot = FALSE,
+naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 1234L, plot = FALSE,
                                   design = NULL, target = NULL, is_log = TRUE) {
   set.seed(seed)
+  if(is.data.frame(design)) design <- as.matrix(design)
   position <- position_init
   positions <- data.frame(matrix(ncol = length(position_init), nrow = iteration))
   tree_depths <- vector("numeric", length = iteration)
+  acceptance_rates <- vector("numeric", length = iteration)
   for(m in 1L:(iteration)) {
     momentum <- rnorm(length(position))
     slice <- runif(1L, max = exp(joint_probability(position, momentum, design, target, is_log = is_log)))
@@ -26,6 +28,7 @@ naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123
     state <- initialize_state(position, momentum)
     tree_depth <- 0L
     setup <- if(plot) setup_trajectory(position, positions) else NULL
+    count <- 0
     while(state$run) {
       # 1 means forward, -1 means backward doubling
       direction <- sample(c(-1L, 1L), 1L)
@@ -51,16 +54,17 @@ naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123
       state$run <- state_proposal$run * is_U_turn(state = state)
       tree_depth <- tree_depth + 1
     }
-    tree_depths[m] <- tree_depth
+    tree_depths[m] <- tree_depth - 2L
+    acceptance_rates[m] <- if(is.null(nrow(state$valid_state$position))) 0 else nrow(state$valid_state$position) / 2^tree_depth
     if(is.matrix(state$valid_state$position) || is.data.frame(state$valid_state$position)) {
       row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
       positions[m, ] <- state$valid_state$position[row_id, ]
-      position = positions[m, ]
+      position = as.numeric(positions[m, ])
     } else {
       positions[m, ] <- position
     }
   }
-  cbind(positions, "tree_depth" = tree_depths)
+  cbind(positions, "tree_depth" = tree_depths, acceptance_rates)
 }
 #_______________________________________________________________________________
 #'  Joint Probability of position and momentum
@@ -71,9 +75,6 @@ joint_probability <- function(position, momentum, design, target, is_log = TRUE)
   dens_estimate <- ifelse(is_log, do.call(posterior_density, args),
                           log(do.call(posterior_density, args))
                           )
-  if(is.nan(dens_estimate - 0.5 * t(momentum) %*% momentum)) {
-    return(0)
-  }
   as.numeric(dens_estimate - 0.5 * t(momentum) %*% momentum)
 }
 #_______________________________________________________________________________
