@@ -29,6 +29,16 @@ sample_naiveNUTS <- function(position_init, stepsize, iteration, design = NULL, 
     slice <- runif(1L, max = exp(joint_probability(position, momentum, design, target)))
     state <- initialize_state(position, momentum)
     tree_depth <- 0L
+    ###### Build Tree ##########################################
+    # While our Leapfrogsteps didn't made a U-Turn we do:
+    # 1) sample a direction to integrate Leapfrogsteps
+    #   a) foreward in time (+1)
+    #   b) backward in time (-1)
+    # 2) build a tree in the previously chosen direction
+    # 3) update our right-/leftmost lepfrog node
+    # 4) Check if U-Turn was made between
+    #   a) sub trees performed in build tree
+    #   b) the whole tree
     while(state$run) {
       # 1 means forward, -1 means backward doubling
       direction <- sample(c(-1L, 1L), 1L)
@@ -51,7 +61,10 @@ sample_naiveNUTS <- function(position_init, stepsize, iteration, design = NULL, 
       state$run <- state_proposal$run * is_U_turn(state = state)
       tree_depth <- tree_depth + 1
     }
-    if(is.matrix(state$valid_state$position) || is.data.frame(state$valid_state$position)) {
+  # Use the Transition kernel:
+  # Sample uniformly one of the valid states drawn through Leapfrog steps
+    if(is.matrix(state$valid_state$position) ||
+       is.data.frame(state$valid_state$position)) {
       row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
       positions[m, ] <- state$valid_state$position[row_id, ]
       position = as.numeric(positions[m, ])

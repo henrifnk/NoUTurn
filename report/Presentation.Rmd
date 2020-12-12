@@ -9,10 +9,13 @@ output:
     reveal_plugins: ["zoom", "menu"]
     center: false
     css: styles.css
+    highlight: "zenburn"
+    transition: "none"
+    reveal_options:
+      slideNumber: true
 header-includes:
   - \usepackage{diffcoeff,amssymb}
 bibliography: references.bib
-highlight: "zenburn"
 ---
 
 ```{r setup, include=FALSE}
@@ -20,8 +23,8 @@ knitr::opts_chunk$set(echo = TRUE)
 devtools::load_all()
 ```
 
-# Metropolis(-Hastings)
-{data-background="algorithm.jpg"}
+
+# <bdi style="color:white;">Metropolis(-Hastings)</bdi>r {data-background="algorithm.jpg"}
 
 ## random walk
 
@@ -117,8 +120,10 @@ knitr::include_graphics("files/halfpipe.gif")
 
 ## Code
 
+
 ```{r, warning=FALSE, code=readLines("../R/Hamiltonian_MonteCarlo.R")}
 ```
+
 
 
 ## Problem
@@ -310,12 +315,12 @@ knitr::include_graphics("files/Doubling.png")
 
 ## Implement NUTS
 
-```{r, warning=FALSE, code=readLines("../R/Simplified_naive_NUTS.R")}
+```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_naive_NUTS.R")}
 ```
 
 ## Implement Build Trees Doubling
 
-```{r, warning=FALSE, code=readLines("../R/Simplyfied_Build_Tree.R")}
+```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree.R")}
 ```
 
 
