@@ -10,14 +10,11 @@
 #' @param target a target feature vector if posterior is a model
 #' @param is_log if the likelyhood is already logged
 #' @example
-#' posterior_density = mvtnorm::dmvnorm
-#' gradient <- function(position){-position}
-#'
-#' posterior_density = sigmoid_posterior
 #' @return
 #'
 naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 1234L, plot = FALSE,
                                   design = NULL, target = NULL, is_log = TRUE) {
+  pb <- txtProgressBar(min = 0, max = iteration, style = 3)
   set.seed(seed)
   if(is.data.frame(design)) design <- as.matrix(design)
   position <- position_init
@@ -36,9 +33,13 @@ naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123
       # 1 means forward, -1 means backward doubling
       direction <- sample(c(-1L, 1L), 1L)
       state_proposal <- if(direction == -1) {
-        build_tree(state$leftmost, slice, direction, tree_depth, stepsize, design, target)
+        build_tree(state$leftmost, slice, direction, tree_depth, stepsize = stepsize,
+                   design = design, target = target, is_log = is_log)
+        state$leftmost <- state_proposal$leftmost
       } else{
-        build_tree(state$rightmost, slice, direction, tree_depth, stepsize, design, target)
+        build_tree(state$rightmost, slice, direction, tree_depth, stepsize = stepsize,
+                   design = design, target = target, is_log = is_log)
+        state$leftmost <- state_proposal$rightmost
       }
       if(!is.null(setup)) setup <- plot_proposal(state_proposal$valid_state$position, setup)
       if(state_proposal$run) {
@@ -54,6 +55,7 @@ naive_nouturn_sampler <- function(position_init, stepsize, iteration, seed = 123
           state$valid_state <- unite_valid_states(state, state_proposal)
         }
       }
+      setTxtProgressBar(pb, m)
       state$run <- state_proposal$run * is_U_turn(state = state)
       tree_depth <- tree_depth + 1
     }
@@ -78,7 +80,7 @@ joint_probability <- function(position, momentum, design = NULL, target = NULL, 
   dens_estimate <- ifelse(is_log, do.call(posterior_density, args),
                           log(do.call(posterior_density, args))
                           )
-  as.numeric(dens_estimate - 0.5 * t(momentum) %*% momentum)
+  as.numeric(dens_estimate - 0.5 * sum(momentum * momentum))
 }
 #_______________________________________________________________________________
 #' Initialize state

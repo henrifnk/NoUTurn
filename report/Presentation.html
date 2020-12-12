@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Henri Funk" />
+  <title>Idea of supressing local random walk</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="Presentation_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="Presentation_files/reveal.js-3.3.0.1/css/theme/simple.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+    <link rel="stylesheet" href="styles.css"/>
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <link href="Presentation_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+    <link href="Presentation_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Idea of supressing local random walk</h1>
+    <h2 class="author">Henri Funk</h2>
+    <h3 class="date">3 12 2020</h3>
+</section>
+
+<section><section id="metropolis-hastings" class="title-slide slide level1"><h1>Metropolis(-Hastings)</h1><p>{data-background=“algorithm.jpg”}</p></section><section id="random-walk" class="slide level2">
+<h2>random walk</h2>
+<ul>
+<li>proposal in MH is sampled randomly from porpoals/jumping distrib <span class="math inline">\(J_t(\theta_a|\theta_b)\)</span></li>
+<li>the accpetance rule/ transition function ratio of densities guarantees convergence</li>
+</ul>
+<p><span class="math display">\[
+\begin{aligned}
+T_t(\theta^t|\theta^{t-1}) = \frac{\frac{p(\theta^*|y)}{J(\theta^*|\theta^{t-1})}}{\frac{p(\theta^{t-1}|y)}{J(\theta^{t-1}|\theta^*)}}
+\end{aligned}
+\]</span></p>
+<ul>
+<li><em>But</em> if steps are poorly chosen converges speed, and accordingly, computational effort can get high</li>
+</ul>
+</section><section id="relation-between-jumping-rule-and-convergence" class="slide level2">
+<h2>Relation between jumping rule and convergence</h2>
+<p><span class="math inline">\(J(\cdot)\)</span> is only useful jumping distibution, if:</p>
+<ul>
+<li>For any <span class="math inline">\(\theta\)</span> it is easy to sample from <span class="math inline">\(J(\theta_a|\theta_b)\)</span></li>
+<li>It is easy to compute r (e.g. if proposal is symmetric)</li>
+<li>The jump has a <em>reasonable</em> distance</li>
+<li>We don’t reject/ accept jumps to often</li>
+</ul>
+<p>(see <span class="citation" data-cites="gelman13">Gelman et al. (2013)</span>)</p>
+<p>But how can we know that</p>
+</section><section id="problem" class="slide level2">
+<h2>Problem</h2>
+<p><img src="files/HMC_multimodal.gif" width="75%" /></p>
+<p><span class="citation" data-cites="feng20">Feng (2016)</span></p>
+<ul>
+<li>Gibbs and MH spend a lot of time zigging and zagging in the target distribution</li>
+<li>For models in High-D parameter-space reparametrization and efficient jumping rules might fail</li>
+</ul>
+</section><section id="idea" class="slide level2">
+<h2>Idea</h2>
+<ul>
+<li>Introduce a momentum <span class="math inline">\(\phi_j\)</span> for each component <span class="math inline">\(\theta_j\)</span></li>
+<li>update <span class="math inline">\(\theta\ \&amp; \ \phi\)</span> simultaneously</li>
+<li>Let the jumping distribution <span class="math inline">\(J(\cdot)\)</span> be largely determined by <span class="math inline">\(\phi\)</span></li>
+</ul>
+<p><span class="math inline">\(\rightarrow\)</span> the resulting algorithm is somewhat a <em>hybrid</em> Monte Carlo with a mix of the known random walk and deterministic simulation methods derived from hamiltonian dynamics</p>
+</section></section>
+<section><section id="hamiltonian-monte-carlo" class="title-slide slide level1"><h1>Hamiltonian Monte Carlo</h1></section><section id="hmc-in-3-steps" class="slide level2">
+<h2>HMC in 3 steps:</h2>
+<ol type="1">
+<li>update <span class="math inline">\(\phi\)</span>, dawn from posterior <span class="math inline">\(p(\phi)\)</span></li>
+<li>simultaneously updating of <span class="math inline">\((\theta,\phi)\)</span> via leapfrog steps</li>
+<li>acceptance/ rejection step analog to MH-Algorithm</li>
+</ol>
+</section><section id="ingredients" class="slide level2">
+<h2>Ingredients</h2>
+<ul>
+<li>(un-normalized) posterior density <span class="math inline">\(p(\theta|y)\)</span></li>
+<li>gradient of <span class="math inline">\(log_e(p(\theta|y))\)</span></li>
+</ul>
+<p><span class="math display">\[
+\frac{\partial log_e(p(\theta|y))}{\partial \theta}
+\]</span> (Note: use analytic solutions here if possible, numerical might make the computational benefit vanish)</p>
+<ul>
+<li>the momentum distribution <span class="math inline">\(p(\phi)\)</span><br />
+<span class="math inline">\(\rightarrow\)</span> usually <span class="math inline">\(\phi \sim \mathcal{N_d}(0, I)\)</span> where 0 denotes a zero vector of <span class="math inline">\(\mathbb{R^d}\)</span> and I denotes a <span class="math inline">\(\mathbb{R^{dxd}}\)</span> identity matrix</li>
+</ul>
+</section><section id="intuition-of-leapfrogsteps" class="slide level2">
+<h2>Intuition of Leapfrogsteps</h2>
+<ul>
+<li>Think of 1/2/3D density curvature</li>
+<li>preserving the posterior for <span class="math inline">\(\lim_{e \to 0} p(\theta,\phi|y)\)</span></li>
+<li>Suppose HMC moves towards <em>low posterior density regions</em>:</li>
+</ul>
+<p><span class="math display">\[
+sgn\Big(\frac{dlog_e(p(\theta|y))}{d\theta}\Big) = -1 \ \Rightarrow \ \phi\ decreases
+\]</span></p>
+<ul>
+<li>Suppose HMC moves towards <em>a local posterior maximum</em>:</li>
+</ul>
+<p><span class="math display">\[
+\frac{dlog_e(p(\theta|y))}{d\theta} = 0 \ \Rightarrow \ p(\theta|y)\ slows \ by\ moving\ closer\ to\ local\ max
+\]</span></p>
+<p><span class="math inline">\(\rightarrow\)</span> HMC works like a mode-finder</p>
+</section><section id="phylical-analogy" class="slide level2">
+<h2>Phylical analogy</h2>
+<p><img src="files/halfpipe.gif" width="75%" /></p>
+</section><section id="code" class="slide level2">
+<h2>Code</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">#&#39; Hamiltonian (hybrid) Monte Carlo</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="co">#&#39;</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="co">#&#39; In computational physics and statistics, the Hamiltonian</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co">#&#39; Monte Carlo algorithm (also known as hybrid Monte Carlo),</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="co">#&#39; is a Markov chain Monte Carlo method for obtaining a</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="co">#&#39; sequence of random samples which converge to being</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="co">#&#39; distributed according to a target probability</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="co">#&#39; distribution for which direct sampling is difficult.</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="co">#&#39; This sequence can be used to estimate integrals with</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="co">#&#39; respect to the target distribution (expected values).</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="co">#&#39;</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="co">#&#39; @inheritParams naive_nouturn_sampler</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a><span class="co">#&#39; @param leapfrogsteps interger; amount of leapfrogsteps</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="co">#&#39;</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a>hamiltonianMC &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, leapfrogsteps,</span>
+<span id="cb1-16"><a href="#cb1-16"></a>                          iterations) {</span>
+<span id="cb1-17"><a href="#cb1-17"></a>  position &lt;-<span class="st"> </span>position_init</span>
+<span id="cb1-18"><a href="#cb1-18"></a>  <span class="cf">for</span>(iter <span class="cf">in</span> <span class="kw">seq_len</span>(iterations)) {</span>
+<span id="cb1-19"><a href="#cb1-19"></a>    momentum &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">length</span>(position_init))</span>
+<span id="cb1-20"><a href="#cb1-20"></a>    gradient</span>
+<span id="cb1-21"><a href="#cb1-21"></a>    proposal &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;position&quot;</span> =<span class="st"> </span>position, <span class="st">&quot;momentum&quot;</span> =<span class="st"> </span>momentum)</span>
+<span id="cb1-22"><a href="#cb1-22"></a>    <span class="cf">for</span>(step <span class="cf">in</span> <span class="kw">seq_len</span>(leapfrogsteps)){</span>
+<span id="cb1-23"><a href="#cb1-23"></a>      gradient &lt;-<span class="st"> </span><span class="kw">gradient</span>(proposal<span class="op">$</span>position)</span>
+<span id="cb1-24"><a href="#cb1-24"></a>      proposal &lt;-<span class="st"> </span><span class="kw">do.call</span>(lepfrog, <span class="kw">c</span>(proposal, stepsize, gradient))</span>
+<span id="cb1-25"><a href="#cb1-25"></a>    }</span>
+<span id="cb1-26"><a href="#cb1-26"></a>    acceptance &lt;-<span class="st"> </span>(<span class="kw">joint_probability</span>(proposal<span class="op">$</span>position, proposal<span class="op">$</span>momentum) <span class="op">/</span></span>
+<span id="cb1-27"><a href="#cb1-27"></a><span class="st">                     </span><span class="kw">joint_probability</span>(position, momentum))</span>
+<span id="cb1-28"><a href="#cb1-28"></a>    acceptance &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="dv">1</span>, acceptance)</span>
+<span id="cb1-29"><a href="#cb1-29"></a>    position &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">c</span>(proposal<span class="op">$</span>position, position),</span>
+<span id="cb1-30"><a href="#cb1-30"></a>                       <span class="dt">prob =</span> <span class="kw">c</span>(acceptance, <span class="dv">1</span> <span class="op">-</span><span class="st"> </span>acceptance))</span>
+<span id="cb1-31"><a href="#cb1-31"></a>  }</span>
+<span id="cb1-32"><a href="#cb1-32"></a>}</span></code></pre></div>
+</section><section id="problem-1" class="slide level2">
+<h2>Problem</h2>
+<p><img src="files/HMC_problem.gif" width="75%" /></p>
+<p><span class="citation" data-cites="feng20">Feng (2016)</span></p>
+<ul>
+<li>taking too few or too large steps <span class="math inline">\(\rightarrow \ \theta^t\ \&amp; \ \theta^{t+1}\)</span> end up very close.</li>
+</ul>
+</section><section id="setting-the-tuning-parameters-i" class="slide level2">
+<h2>Setting the tuning parameters I</h2>
+<p>(Hand-)Tuning Parameters:</p>
+<p><span class="math inline">\(\epsilon = stepsize\)</span><br />
+<span class="math inline">\(\mathcal{L} = \#Leapfrogsteps\)</span><br />
+<span class="math inline">\(\phi = momentum\)</span></p>
+<p>There are several heuristics and strategies to set the tuning parameters:</p>
+</section><section id="setting-the-tuning-parameters-ii" class="slide level2">
+<h2>Setting the tuning parameters II</h2>
+<ul>
+<li><p><em>Radius</em>:</p>
+<p>stay in the radius of you target distribution. Rule of thumb: <span class="math inline">\(\epsilon \mathcal{L} = 1\)</span></p></li>
+<li><p><em>adaptive updating</em>:</p>
+<ol type="1">
+<li><p>run <span class="math inline">\(M_{init}\)</span> steps with initial setting</p></li>
+<li><p>adjust the parameters based on knowledge from previous run and rerun the model for <span class="math inline">\(M_{adjust}\)</span> steps</p></li>
+</ol></li>
+<li><p><em>Acceptance Sweet Spot</em>: 65% acceptance rate (<span class="math inline">\(\alpha\)</span>)</p>
+<p>if <span class="math inline">\(\alpha &lt; 0.65 \Rightarrow\)</span> leapfrog jumps are too ambitious. Set <span class="math inline">\(\mathcal{L}\uparrow, \epsilon \downarrow\)</span>.</p>
+<p>if <span class="math inline">\(\alpha &gt; 0.65 \Rightarrow\)</span> leapfrog jumps are too cautious. Set <span class="math inline">\(\mathcal{L} \downarrow, \epsilon \uparrow\)</span>. (see <span class="citation" data-cites="gelman13">Gelman et al. (2013)</span>)</p></li>
+</ul>
+</section><section id="desirable-behavoir-for-tuning-parameters-tuning-parameters-hmc" class="slide level2">
+<h2>Desirable behavoir for tuning parameters tuning parameters HMC:</h2>
+<ol type="1">
+<li><p><span class="math inline">\(\mathcal{L}\)</span> driving the trajectory of steps in one iteration though the whole posterior space. <em>Tackeled by NUTS</em></p></li>
+<li><p><span class="math inline">\(\epsilon\)</span> getting smaller in areas of high curvature exploiting various areas. <em>Tackeled by dual averaging</em></p></li>
+<li><p><span class="math inline">\(Covar(\phi)\)</span> scaling to the local curvature. <em>Riemanian Integral</em></p></li>
+</ol>
+<p>All three approaches may be combined. In the following we will discuss the implementation for a No-U-Turn sampler with dual averaging, as discussed in Gelman and Hoffman (2014).@hoffman2014</p>
+</section></section>
+<section><section id="the-naive-no-u-turn-sampler" class="title-slide slide level1"><h1>The (naive) No-U-Turn Sampler</h1></section><section id="problem-of-adapting-mathcall-and-epsilon-within-the-run" class="slide level2">
+<h2>Problem of adapting <span class="math inline">\(\mathcal{L}\)</span> and <span class="math inline">\(\epsilon\)</span> within the run</h2>
+<ul>
+<li><p>As we use the information from Hamiltonian dynamics to tune <span class="math inline">\(\epsilon\)</span> and <span class="math inline">\(\mathcal{L}\)</span> within the run iteration don’t guarantee convergence anymore</p></li>
+<li><p>Property of markov chain is not given anymore</p></li>
+<li><p>What do we do now?</p>
+<ul>
+<li>Derive a heuristic when we want to stop the sampling</li>
+<li>Ensure the adaption satisfies the Markov Chain properties</li>
+</ul></li>
+</ul>
+</section><section id="heuristic-excurs-on-trajectories" class="slide level2">
+<h2>Heuristic: Excurs on Trajectories</h2>
+<ul>
+<li>Lets look at one iteration <span class="math inline">\(t\)</span> in HMC where we intentionally set
+<ol type="a">
+<li><span class="math inline">\(\mathcal{L_t}\)</span> to small</li>
+<li><span class="math inline">\(\mathcal{L_t}\)</span> to high</li>
+</ol></li>
+<li>The <span class="math inline">\(\mathcal{L_t}\)</span>-Leapfrog steps performed from starting state <span class="math inline">\(q_{right} = (\theta_{right}, r_{right})\)</span> in phase-space to theit end after might look as follows <span class="math inline">\(\mathcal{L_t}\)</span> Leapfrogsteps <span class="math inline">\(q_{left} = (\theta_{left}, r_{left})\)</span></li>
+</ul>
+</section><section id="heuristic-stopping-criteria" class="slide level2">
+<h2>Heuristic Stopping Criteria</h2>
+<div class="figure">
+<img src="files/U-Turn-Criteria.png" alt="a) expanding the trajectory in either direction typically extends the trajectory further  across the energy level set (grey) towards unexplored neighborhood
+
+b) further expansion typically contracts the boundaries of the trajectory towards each other and neighborhoods that have already beenexplored
+" width="75%" />
+<p class="caption">
+<ol type="a">
+<li><p>expanding the trajectory in either direction typically extends the trajectory further across the energy level set (grey) towards unexplored neighborhood</p></li>
+<li><p>further expansion typically contracts the boundaries of the trajectory towards each other and neighborhoods that have already beenexplored</p></li>
+</ol>
+</p>
+</div>
+<p>explore the energy level stepwise <span class="citation" data-cites="betancourt2017">Betancourt (2017)</span></p>
+</section><section id="criterion" class="slide level2">
+<h2>Criterion</h2>
+<p><span class="math display">\[
+r_{left} (\theta_{right} - \theta_{left}) &lt; 0\\
+r_{right} (\theta_{left} - \theta_{right}) &lt; 0
+\]</span> <em>Derivation:</em> this is basicly a euclidean derivative w.r.t. time t of half the squared distance between two positions: <span class="math inline">\(\frac{d(\theta_1 - \theta_2)}{dt}\)</span>. <em>Intuition:</em> this is the dot product of the two vectors fromthe picture. If the dot product gets higher than 0, the trajectory wil make a <em>u-turn</em>. This is when we “travelled maximally” in phase space an so where we want to stop exploring the enery set.</p>
+</section><section id="naive-stepwise-exploration-scheme" class="slide level2">
+<h2>Naive Stepwise Exploration Scheme</h2>
+<ol type="1">
+<li>Build a trajectory with a given length</li>
+<li>Check the Termination (No-U-Turn) Criterion</li>
+<li>Expand the trajectory and &amp; Repeat Checks</li>
+<li>Return the sample once the criterion is met</li>
+</ol>
+</section><section id="doubling--expand-the-trajectory" class="slide level2">
+<h2>Doubling- expand the trajectory</h2>
+<p>Naive Additive Scheme: Check the termination Criteria for each and every point between any two points Smart Multiplicative Scheme: Double the trajectory to the old trajectory and so create a balanced binary tree. Compare the criterion only between subtrees.</p>
+<div class="figure">
+<img src="files/Doubling.png" alt="typical doubling proccedure. initial point is black. Each colour desricbes a new subtree." width="75%" />
+<p class="caption">
+typical doubling proccedure. initial point is black. Each colour desricbes a new subtree.
+</p>
+</div>
+<p><span class="citation" data-cites="hoffman2014">Hoffman and Gelman (2014)</span> The doubling is halted when the sub-trajectories from the leftmost to the rightmost nodes of any balanced binary tree start to double back on themselves.</p>
+<p><em>Info:</em> We have to double fore- and backwards in our trajectory to guarantee reversibility in time <em>Problem</em>: this naive scheme still violates the reversibility criteria</p>
+</section><section id="slice-to-the-rescue" class="slide level2">
+<h2>Slice to the Rescue</h2>
+<p>Some of the trajectory points sampled have to be condemn because they exhibit pathological behavior. To determine those points we introduce a slice variable <span class="math inline">\(u\)</span> to our posterior, such that <span class="math inline">\(p(u|\theta,r) = Unif(u; [0, e^{\mathcal{L}(\theta) - \frac{1}{2} &lt;r,r&gt;}])\)</span>, where <span class="math inline">\(p(\theta, r) \propto \mathcal{L}(\theta) - \frac{1}{2} &lt;r,r&gt;\)</span> is the log-joint distribution of <span class="math inline">\(\theta\)</span> an <span class="math inline">\(r\)</span>.</p>
+<p><span class="math inline">\(p(u, \theta,r) \propto \mathbb{I}[u \in [0, e^{p(\theta, r)}]]\)</span></p>
+<p><em>Alternative:</em> draw multinomial over states in the trajectory</p>
+</section><section id="valid-states" class="slide level2">
+<h2>Valid States</h2>
+<ul>
+<li>Say <span class="math inline">\(\mathcal{B}\)</span> is the set of all sampled states</li>
+<li><span class="math inline">\(\mathcal{C} \supseteq \mathcal{B}\)</span> is the set of all valid samples, if the following conditions hold:</li>
+</ul>
+<ol type="1">
+<li><span class="math inline">\(p(\theta,r| (\theta, r)\in \mathcal{C}) \propto p(\theta,r)\)</span> ensures, if we restrict our attention to <span class="math inline">\(\mathcal{C}\)</span> the unnormalized density of an element <span class="math inline">\((\theta,r)\)</span> from this set preserves the volume of our joint density <span class="math inline">\(p(\theta, r)\)</span></li>
+<li><span class="math inline">\(p((\theta,r) \in \mathcal{C}| \theta, r ,u, \epsilon) = 1\)</span> The current state must be included in <span class="math inline">\(\mathcal{C}\)</span></li>
+<li><span class="math inline">\(p(u \leq e^{\mathcal{L}(\theta) - \frac{1}{2} &lt;r,r&gt;}|(\hat{\theta}, \hat{r}) \in \mathcal{C}) = 1\)</span> any state in <span class="math inline">\(\mathcal{C}\)</span> defined is in the slice defined by <span class="math inline">\(u\)</span></li>
+<li>Let <span class="math inline">\((\hat{\theta}, \hat{r}) \in \mathcal{C} ;(\theta, r) \in \mathcal{C} \Rightarrow For\ any\ \mathcal{B}\ p(\mathcal{B},\mathcal{C}| \theta, r, u, \epsilon) = p(\mathcal{B},\mathcal{C}| \hat{\theta}, \hat{r}, u, \epsilon)\)</span> <span class="math inline">\(\mathcal{B}\ \&amp;\ \mathcal{C}\)</span> must have equal probability of being selected no matter the current state</li>
+</ol>
+</section><section id="gibbs-sample" class="slide level2">
+<h2>Gibbs sample</h2>
+<p>Given the Conditions the following Gibbs sampling process leaves the joint distribution <span class="math inline">\(p(\mathcal{B},\mathcal{C}, \theta, r, u| \epsilon)\)</span></p>
+<ol type="1">
+<li>sample <span class="math inline">\(r \sim \mathcal{N}(0, I)\)</span></li>
+<li>sample <span class="math inline">\(u \sim Unif([0, e^{\mathcal{L}(\theta) - \frac{1}{2} &lt;r,r&gt;}])\)</span></li>
+<li>sample <span class="math inline">\(\mathcal{B},\mathcal{C}\)</span> from their conditional <span class="math inline">\(p(\mathcal{B},\mathcal{C}| \theta^t, r, u, \epsilon)\)</span></li>
+<li>sample <span class="math inline">\(\theta^{t+1},r \sim T(\theta^t,r,\mathcal{C})\)</span> from the Transition kernel, where <span class="math inline">\(T(\theta^t,r,\mathcal{C})\)</span> leaves uniform distribution over <span class="math inline">\(\mathcal{C}\)</span> invariant</li>
+</ol>
+</section><section id="mathcalb-mathcalc-in-nuts" class="slide level2">
+<h2><span class="math inline">\(\mathcal{B}, \mathcal{C}\)</span> in NUTS</h2>
+<p><span class="math inline">\(\mathcal{B}\)</span>: constituted by all leaves of the binary tree generated in the doubling proccedure of one NUTS iteration. If <span class="math inline">\(j\)</span> denotes the depth of a tree the amount of visited states through doubling in leapfrog trajectory is <span class="math inline">\(\#\mathcal{B} = 2^j\)</span>.<br />
+<span class="math inline">\(\mathcal{C}\)</span>: contains all valid states visited.</p>
+<div class="figure">
+<img src="files/Doubling.png" alt="Example of a trajectory generated during one iteration of NUTS. The blue ellipse
+is a contour of the target distribution, the black open circles are the positions
+traced out by the leapfrog integrator and associated with elements of the set of
+visited states B, the black solid circle is the starting position, the red solid circles
+are positions associated with states that must be excluded from the set C of
+possible next samples because their joint probability is below the slice variable u,
+and the positions with a red x through them correspond to states that must be
+excluded from C to satisfy detailed balance. The blue arrow is the vector from the
+positions associated with the leftmost to the rightmost leaf nodes in the rightmost
+height-3 subtree, and the magenta arrow is the (normalized) momentum vector
+at the nal state in the trajectory. The doubling process stops here, since the
+blue and magenta arrows make an angle of more than 90 degrees. The crossedout
+nodes with a red x are in the right half-tree, and must be ignored when
+choosing the next sample." width="75%" />
+<p class="caption">
+Example of a trajectory generated during one iteration of NUTS. The blue ellipse is a contour of the target distribution, the black open circles are the positions traced out by the leapfrog integrator and associated with elements of the set of visited states B, the black solid circle is the starting position, the red solid circles are positions associated with states that must be excluded from the set C of possible next samples because their joint probability is below the slice variable u, and the positions with a red x through them correspond to states that must be excluded from C to satisfy detailed balance. The blue arrow is the vector from the positions associated with the leftmost to the rightmost leaf nodes in the rightmost height-3 subtree, and the magenta arrow is the (normalized) momentum vector at the nal state in the trajectory. The doubling process stops here, since the blue and magenta arrows make an angle of more than 90 degrees. The crossedout nodes with a red x are in the right half-tree, and must be ignored when choosing the next sample.
+</p>
+</div>
+</section><section id="implement-nuts" class="slide level2">
+<h2>Implement NUTS</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">#&#39; Simplyfied naive U-Turn-Sampler Showcase</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="co">#&#39;</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="co">#&#39; @param position_init initial value for theta</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="co">#&#39; @param stepsize size \epsilon for leapfrog steps</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="co">#&#39; @param iteration number of iterations to sample from</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="co">#&#39; @param design a design matrix, if posterior is a model</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="co">#&#39; @param target a target feature vector if posterior is a model</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="co">#&#39; @param is_log if the likelyhood is already logged</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="co">#&#39; @example</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="co">#&#39; @return</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="co">#&#39;</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>sample_naiveNUTS &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
+<span id="cb2-13"><a href="#cb2-13"></a>  position &lt;-<span class="st"> </span>position_init</span>
+<span id="cb2-14"><a href="#cb2-14"></a>  positions &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">matrix</span>(<span class="dt">ncol =</span> <span class="kw">length</span>(position_init), <span class="dt">nrow =</span> iteration))</span>
+<span id="cb2-15"><a href="#cb2-15"></a>  <span class="cf">for</span>(m <span class="cf">in</span> 1L<span class="op">:</span>(iteration)) {</span>
+<span id="cb2-16"><a href="#cb2-16"></a>    momentum &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">length</span>(position))</span>
+<span id="cb2-17"><a href="#cb2-17"></a>    slice &lt;-<span class="st"> </span><span class="kw">runif</span>(1L, <span class="dt">max =</span> <span class="kw">exp</span>(<span class="kw">joint_probability</span>(position, momentum, design, target)))</span>
+<span id="cb2-18"><a href="#cb2-18"></a>    state &lt;-<span class="st"> </span><span class="kw">initialize_state</span>(position, momentum)</span>
+<span id="cb2-19"><a href="#cb2-19"></a>    tree_depth &lt;-<span class="st"> </span>0L</span>
+<span id="cb2-20"><a href="#cb2-20"></a>    <span class="cf">while</span>(state<span class="op">$</span>run) {</span>
+<span id="cb2-21"><a href="#cb2-21"></a>      <span class="co"># 1 means forward, -1 means backward doubling</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a>      direction &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">c</span>(<span class="op">-</span>1L, 1L), 1L)</span>
+<span id="cb2-23"><a href="#cb2-23"></a>      state_proposal &lt;-<span class="st"> </span><span class="cf">if</span>(direction <span class="op">==</span><span class="st"> </span><span class="dv">-1</span>) {</span>
+<span id="cb2-24"><a href="#cb2-24"></a>        <span class="kw">build_tree</span>(state<span class="op">$</span>leftmost, slice, direction, tree_depth, <span class="dt">stepsize =</span> stepsize,</span>
+<span id="cb2-25"><a href="#cb2-25"></a>                   <span class="dt">design =</span> design, <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log)</span>
+<span id="cb2-26"><a href="#cb2-26"></a>      } <span class="cf">else</span>{</span>
+<span id="cb2-27"><a href="#cb2-27"></a>        <span class="kw">build_tree</span>(state<span class="op">$</span>rightmost, slice, direction, tree_depth, <span class="dt">stepsize =</span> stepsize,</span>
+<span id="cb2-28"><a href="#cb2-28"></a>                   <span class="dt">design =</span> design, <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log)</span>
+<span id="cb2-29"><a href="#cb2-29"></a>      }</span>
+<span id="cb2-30"><a href="#cb2-30"></a>      <span class="cf">if</span>(state_proposal<span class="op">$</span>run) {</span>
+<span id="cb2-31"><a href="#cb2-31"></a>        <span class="cf">if</span>(direction <span class="op">==</span><span class="st"> </span><span class="dv">-1</span>) {</span>
+<span id="cb2-32"><a href="#cb2-32"></a>          state<span class="op">$</span>leftmost &lt;-<span class="st"> </span>state_proposal<span class="op">$</span>leftmost</span>
+<span id="cb2-33"><a href="#cb2-33"></a>          state<span class="op">$</span>valid_state &lt;-<span class="st"> </span><span class="kw">unite_valid_states</span>(state_proposal, state)</span>
+<span id="cb2-34"><a href="#cb2-34"></a>        } <span class="cf">else</span>{</span>
+<span id="cb2-35"><a href="#cb2-35"></a>          state<span class="op">$</span>rightmost &lt;-<span class="st"> </span>state_proposal<span class="op">$</span>rightmost</span>
+<span id="cb2-36"><a href="#cb2-36"></a>          state<span class="op">$</span>valid_state &lt;-<span class="st"> </span><span class="kw">unite_valid_states</span>(state, state_proposal)</span>
+<span id="cb2-37"><a href="#cb2-37"></a>        }</span>
+<span id="cb2-38"><a href="#cb2-38"></a>      }</span>
+<span id="cb2-39"><a href="#cb2-39"></a>      state<span class="op">$</span>run &lt;-<span class="st"> </span>state_proposal<span class="op">$</span>run <span class="op">*</span><span class="st"> </span><span class="kw">is_U_turn</span>(<span class="dt">state =</span> state)</span>
+<span id="cb2-40"><a href="#cb2-40"></a>      tree_depth &lt;-<span class="st"> </span>tree_depth <span class="op">+</span><span class="st"> </span><span class="dv">1</span></span>
+<span id="cb2-41"><a href="#cb2-41"></a>    }</span>
+<span id="cb2-42"><a href="#cb2-42"></a>    <span class="cf">if</span>(<span class="kw">is.matrix</span>(state<span class="op">$</span>valid_state<span class="op">$</span>position) <span class="op">||</span><span class="st"> </span><span class="kw">is.data.frame</span>(state<span class="op">$</span>valid_state<span class="op">$</span>position)) {</span>
+<span id="cb2-43"><a href="#cb2-43"></a>      row_id &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">seq_len</span>(<span class="kw">nrow</span>(state<span class="op">$</span>valid_state<span class="op">$</span>position)), 1L)</span>
+<span id="cb2-44"><a href="#cb2-44"></a>      positions[m, ] &lt;-<span class="st"> </span>state<span class="op">$</span>valid_state<span class="op">$</span>position[row_id, ]</span>
+<span id="cb2-45"><a href="#cb2-45"></a>      position =<span class="st"> </span><span class="kw">as.numeric</span>(positions[m, ])</span>
+<span id="cb2-46"><a href="#cb2-46"></a>    } <span class="cf">else</span> {</span>
+<span id="cb2-47"><a href="#cb2-47"></a>      positions[m, ] &lt;-<span class="st"> </span>position</span>
+<span id="cb2-48"><a href="#cb2-48"></a>    }</span>
+<span id="cb2-49"><a href="#cb2-49"></a>  }</span>
+<span id="cb2-50"><a href="#cb2-50"></a>  positions</span>
+<span id="cb2-51"><a href="#cb2-51"></a>}</span></code></pre></div>
+</section><section id="implement-build-trees-doubling" class="slide level2">
+<h2>Implement Build Trees Doubling</h2>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">#&#39; Build Trees doubles the postitions and momentums and such the trajectory length</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="co">#&#39;</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">#&#39; Repatedly called by NUTS until run == FALSE, that is when a U-Turn is performed.</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">#&#39;</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co">#&#39; @param position_momentum list, contains actual position and momentum</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">#&#39; @param slice drawn slice sample to validate position-/momentum steps</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co">#&#39; @param direction determines whether trajectory should explore foreward or backwards</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co">#&#39; @param tree_depth balanced treedepth with momentum and position states in the tree nodes</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">#&#39; @param stepsize parsed stepsize \epsilon to Leapfrog step function</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co">#&#39;</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co">#&#39; @return</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="co">#&#39;</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>build_tree_simply &lt;-<span class="st"> </span><span class="cf">function</span>(position_momentum, slice, direction, tree_depth, is_log,</span>
+<span id="cb3-14"><a href="#cb3-14"></a>                       stepsize, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">deltamax =</span> 1000L,</span>
+<span id="cb3-15"><a href="#cb3-15"></a>                       <span class="dt">run =</span> <span class="dv">1</span>, <span class="dt">valid_states =</span> <span class="kw">structure</span>(<span class="kw">vector</span>(<span class="st">&quot;list&quot;</span>, <span class="dt">length =</span> 2L))) {</span>
+<span id="cb3-16"><a href="#cb3-16"></a>  <span class="cf">if</span>(tree_depth <span class="op">==</span><span class="st"> </span>0L) {<span class="co"># Basecase - take one leapfrogstep into direction</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a>    <span class="kw">build_leaf</span>(position_momentum, slice, direction, tree_depth,</span>
+<span id="cb3-18"><a href="#cb3-18"></a>               <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb3-19"><a href="#cb3-19"></a>               <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log)</span>
+<span id="cb3-20"><a href="#cb3-20"></a>  } <span class="cf">else</span> {<span class="co"># Recursion- build left/right subtrees</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a>    state &lt;-<span class="st"> </span><span class="kw">build_tree</span>(position_momentum, slice, direction, tree_depth <span class="op">-</span><span class="st"> </span>1L,</span>
+<span id="cb3-22"><a href="#cb3-22"></a>                        <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb3-23"><a href="#cb3-23"></a>                        <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log, <span class="dt">run =</span> run, <span class="dt">valid_states =</span> valid_states)</span>
+<span id="cb3-24"><a href="#cb3-24"></a>    <span class="cf">if</span>(direction <span class="op">==</span><span class="st"> </span><span class="op">-</span>1L) {</span>
+<span id="cb3-25"><a href="#cb3-25"></a>      state1 &lt;-<span class="st"> </span><span class="kw">build_tree</span>(state<span class="op">$</span>leftmost, slice, direction, tree_depth <span class="op">-</span><span class="st"> </span>1L,</span>
+<span id="cb3-26"><a href="#cb3-26"></a>                           <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb3-27"><a href="#cb3-27"></a>                           <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log, <span class="dt">run =</span> run, <span class="dt">valid_states =</span> valid_states)</span>
+<span id="cb3-28"><a href="#cb3-28"></a>      position_momentum  &lt;-<span class="st"> </span>state<span class="op">$</span>leftmost &lt;-<span class="st"> </span>state1<span class="op">$</span>leftmost</span>
+<span id="cb3-29"><a href="#cb3-29"></a>    } <span class="cf">else</span> {</span>
+<span id="cb3-30"><a href="#cb3-30"></a>      state1 &lt;-<span class="st"> </span><span class="kw">build_tree</span>(state<span class="op">$</span>rightmost, slice, direction, tree_depth <span class="op">-</span><span class="st"> </span>1L,</span>
+<span id="cb3-31"><a href="#cb3-31"></a>                           <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb3-32"><a href="#cb3-32"></a>                           <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log, <span class="dt">run =</span> run, <span class="dt">valid_states =</span> valid_states)</span>
+<span id="cb3-33"><a href="#cb3-33"></a>      position_momentum  &lt;-<span class="st"> </span>state<span class="op">$</span>rightmost &lt;-<span class="st"> </span>state1<span class="op">$</span>rightmost</span>
+<span id="cb3-34"><a href="#cb3-34"></a>    }</span>
+<span id="cb3-35"><a href="#cb3-35"></a>    <span class="co"># if any state is 0 Stopping criteria is triggered for trajectory iterations</span></span>
+<span id="cb3-36"><a href="#cb3-36"></a>    run &lt;-<span class="st"> </span>run <span class="op">*</span><span class="st"> </span>state1<span class="op">$</span>run <span class="op">*</span><span class="st"> </span>state<span class="op">$</span>run <span class="op">*</span><span class="st"> </span><span class="kw">is_U_turn</span>(state)</span>
+<span id="cb3-37"><a href="#cb3-37"></a>    state<span class="op">$</span>run &lt;-<span class="st"> </span>run</span>
+<span id="cb3-38"><a href="#cb3-38"></a>    valid_states<span class="op">$</span>position &lt;-<span class="st"> </span><span class="kw">rbind</span>(valid_states<span class="op">$</span>position, state<span class="op">$</span>valid_state<span class="op">$</span>position, state1<span class="op">$</span>valid_state<span class="op">$</span>position)</span>
+<span id="cb3-39"><a href="#cb3-39"></a>    valid_states<span class="op">$</span>momentum &lt;-<span class="st"> </span><span class="kw">rbind</span>(valid_states<span class="op">$</span>momentum, state<span class="op">$</span>valid_state<span class="op">$</span>momentum, state1<span class="op">$</span>valid_state<span class="op">$</span>momentum)</span>
+<span id="cb3-40"><a href="#cb3-40"></a>    state<span class="op">$</span>valid_state<span class="op">$</span>position &lt;-<span class="st"> </span>valid_states<span class="op">$</span>position</span>
+<span id="cb3-41"><a href="#cb3-41"></a>    state<span class="op">$</span>valid_state<span class="op">$</span>momentum &lt;-<span class="st"> </span>valid_states<span class="op">$</span>momentum</span>
+<span id="cb3-42"><a href="#cb3-42"></a>    <span class="kw">return</span>(state)</span>
+<span id="cb3-43"><a href="#cb3-43"></a>  }</span>
+<span id="cb3-44"><a href="#cb3-44"></a>}</span>
+<span id="cb3-45"><a href="#cb3-45"></a></span>
+<span id="cb3-46"><a href="#cb3-46"></a>build_leaf_simply &lt;-<span class="st"> </span><span class="cf">function</span>(position_momentum, slice, direction, tree_depth, stepsize, deltamax,</span>
+<span id="cb3-47"><a href="#cb3-47"></a>                       <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">iter =</span> <span class="ot">NULL</span>, is_log) {</span>
+<span id="cb3-48"><a href="#cb3-48"></a>  args &lt;-<span class="st"> </span><span class="cf">if</span>(<span class="kw">is.null</span>(design) <span class="op">&amp;&amp;</span><span class="st"> </span><span class="kw">is.null</span>(target)) {</span>
+<span id="cb3-49"><a href="#cb3-49"></a>    <span class="kw">list</span>(position_momentum<span class="op">$</span>position)</span>
+<span id="cb3-50"><a href="#cb3-50"></a>  } <span class="cf">else</span> <span class="kw">list</span>(position_momentum<span class="op">$</span>position, design, target)</span>
+<span id="cb3-51"><a href="#cb3-51"></a>  gradient_step &lt;-<span class="st"> </span><span class="kw">do.call</span>(gradient, args)</span>
+<span id="cb3-52"><a href="#cb3-52"></a>  step &lt;-<span class="st"> </span><span class="kw">leapfrog</span>(position_momentum<span class="op">$</span>position, position_momentum<span class="op">$</span>momentum,</span>
+<span id="cb3-53"><a href="#cb3-53"></a>                   <span class="dt">stepsize =</span> (direction <span class="op">*</span><span class="st"> </span>stepsize), <span class="dt">gradient =</span> gradient_step)</span>
+<span id="cb3-54"><a href="#cb3-54"></a>  proposal_state &lt;-<span class="st"> </span><span class="kw">do.call</span>(initialize_state, <span class="kw">c</span>(step, <span class="st">&quot;efficient&quot;</span> =<span class="st"> </span><span class="op">!</span><span class="kw">is.null</span>(iter)))</span>
+<span id="cb3-55"><a href="#cb3-55"></a>  proposal_density &lt;-<span class="st"> </span><span class="kw">do.call</span>(joint_probability, <span class="kw">c</span>(step, <span class="kw">list</span>(design), <span class="kw">list</span>(target), <span class="st">&quot;is_log&quot;</span> =<span class="st"> </span>is_log))</span>
+<span id="cb3-56"><a href="#cb3-56"></a>  valid &lt;-<span class="st"> </span>slice <span class="op">&lt;=</span><span class="st"> </span><span class="kw">exp</span>(proposal_density)</span>
+<span id="cb3-57"><a href="#cb3-57"></a>  <span class="cf">if</span>(valid) proposal_state<span class="op">$</span>valid_state &lt;-<span class="st"> </span>step</span>
+<span id="cb3-58"><a href="#cb3-58"></a>  <span class="cf">if</span>(<span class="op">!</span><span class="kw">is.null</span>(iter)) {</span>
+<span id="cb3-59"><a href="#cb3-59"></a>    proposal_state<span class="op">$</span>count &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(valid)</span>
+<span id="cb3-60"><a href="#cb3-60"></a>    quotient_lik &lt;-<span class="st"> </span><span class="kw">exp</span>(proposal_density <span class="op">-</span><span class="st"> </span><span class="kw">do.call</span>(joint_probability, <span class="kw">c</span>(iter, <span class="kw">list</span>(design), <span class="kw">list</span>(target), <span class="st">&quot;is_log&quot;</span> =<span class="st"> </span>is_log)))</span>
+<span id="cb3-61"><a href="#cb3-61"></a>    proposal_state<span class="op">$</span>acceptance<span class="op">$</span>acceptance &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="dv">1</span>, quotient_lik)</span>
+<span id="cb3-62"><a href="#cb3-62"></a>    proposal_state<span class="op">$</span>valid_state &lt;-<span class="st"> </span>step</span>
+<span id="cb3-63"><a href="#cb3-63"></a>  }</span>
+<span id="cb3-64"><a href="#cb3-64"></a>  proposal_state<span class="op">$</span>run &lt;-<span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>(proposal_density <span class="op">&gt;</span><span class="st"> </span><span class="kw">log</span>(slice) <span class="op">-</span><span class="st"> </span>deltamax)</span>
+<span id="cb3-65"><a href="#cb3-65"></a>  proposal_state</span>
+<span id="cb3-66"><a href="#cb3-66"></a>}</span></code></pre></div>
+<style type='text/css'>
+/* Structural CSS ------------------------------------------------------------*/
+/*
+ * TBD whether we want a more fully table like structure; some of the visual
+ * cues provided by the current set-up are useful (line wraps, etc.)
+ */
+
+DIV.diffobj-container PRE.diffobj-content {
+  white-space: pre-wrap;
+  margin: 0;
+}
+DIV.diffobj-container DIV.diffobj-row {
+  width: 100%;
+  font-family: monospace;
+  display: table;
+  table-layout: fixed;
+}
+DIV.diffobj-container DIV.diffobj-line {
+  width: auto;
+  display: table-cell;
+  overflow: hidden;
+}
+DIV.diffobj-container DIV.diffobj-line>DIV {
+  width: 100%;
+  display: table;
+  table-layout: auto;
+}
+DIV.diffobj-container DIV.diffobj-line.banner>DIV {
+  display: table;
+  table-layout: auto; /* set to fixed in JS */
+}
+DIV.diffobj-container DIV.diffobj-text {
+  display: table-cell;
+  width: 100%;
+}
+DIV.diffobj-container DIV.diffobj-gutter {
+  display: table-cell;
+  padding: 0 0.2em;
+}
+DIV.diffobj-container DIV.diffobj-gutter DIV {
+  display: table-cell;
+}
+#diffobj_content_meta DIV.diffobj-container DIV.diffobj-row {
+  width: auto;
+}
+#diffobj_banner_meta DIV.diffobj-container DIV.diffobj-line.banner>DIV {
+  table-layout: auto;
+}
+#diffobj_outer {
+  overflow: hidden;
+}
+/* Summary -------------------------------------------------------------------*/ 
+
+DIV.diffobj-container DIV.diffobj-summary DIV.map {
+  word-wrap: break-word;
+  padding-left: 1em;
+}
+DIV.diffobj-container DIV.diffobj-summary DIV.detail {
+  padding-left: 1em;
+}
+
+/* Common elements -----------------------------------------------------------*/
+
+DIV.diffobj-container DIV.diffobj-line.banner {
+  font-size: 1.2em;
+  font-weight: bold;
+  overflow: hidden;
+}
+/* truncate banners */
+DIV.diffobj-container DIV.diffobj-line.banner DIV.diffobj-text DIV{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;             /* need to compute and set in JS */
+}
+DIV.diffobj-container DIV.diffobj-gutter,
+DIV.diffobj-container DIV.diffobj-guide,
+DIV.diffobj-container DIV.diffobj-fill,
+DIV.diffobj-container DIV.context_sep,
+DIV.diffobj-container SPAN.diffobj-trim {
+  color: #999;
+}
+DIV.diffobj-container DIV.diffobj-header {
+  font-size: 1.1em;
+}
+DIV.diffobj-container DIV.diffobj-text>DIV.diffobj-match,
+DIV.diffobj-container DIV.diffobj-text>DIV.diffobj-guide {
+  background-color: #ffffff;
+}
+DIV.diffobj-container DIV.diffobj-text>DIV.diffobj-fill {
+  background-color: transparent;
+}
+DIV.diffobj-container DIV.diffobj-text>DIV {
+  padding-right: 3px;
+}
+DIV.diffobj-container DIV.diffobj-text>DIV {
+  border-left: 1px solid #888888;
+}
+DIV.diffobj-container DIV.diffobj-line {
+  background-color: #eeeeee;
+}
+DIV.diffobj-container DIV.diffobj-text>DIV,
+DIV.diffobj-container DIV.diffobj-header {
+  padding-left: 0.5em;
+}
+DIV.diffobj-container DIV.diffobj-line>DIV.diffobj-match,
+DIV.diffobj-container DIV.diffobj-line>DIV.diffobj-fill,
+DIV.diffobj-container DIV.diffobj-line>DIV.diffobj-guide {
+  border-left: 1px solid #888888;
+}
+/* github inspired color scheme - default ------------------------------------*/
+
+DIV.diffobj-container.light.rgb SPAN.diffobj-word.insert,
+DIV.diffobj-container.light.rgb DIV.diffobj-line>DIV.insert {
+  background-color: #a6f3a6;
+}
+DIV.diffobj-container.light.rgb SPAN.diffobj-word.delete,
+DIV.diffobj-container.light.rgb DIV.diffobj-line>DIV.delete {
+  background-color: #f8c2c2;
+}
+DIV.diffobj-container.light.rgb DIV.diffobj-text>DIV.insert {
+  background-color: #efffef;
+}
+DIV.diffobj-container.light.rgb DIV.diffobj-text>DIV.insert,
+DIV.diffobj-container.light.rgb DIV.diffobj-line>DIV.insert {
+  border-left: 1px solid #33bb33;
+}
+DIV.diffobj-container.light.rgb DIV.diffobj-text>DIV.delete {
+  background-color: #ffefef;
+}
+DIV.diffobj-container.light.rgb DIV.diffobj-text>DIV.delete,
+DIV.diffobj-container.light.rgb DIV.diffobj-line>DIV.delete {
+  border-left: 1px solid #cc6666;
+}
+DIV.diffobj-container.light.rgb DIV.diffobj-header {
+  background-color: #e0e6fa;
+  border-left: 1px solid #9894b6;
+}
+/* Yellow Blue variation -----------------------------------------------------*/
+
+DIV.diffobj-container.light.yb SPAN.diffobj-word.insert,
+DIV.diffobj-container.light.yb DIV.diffobj-line>DIV.insert {
+  background-color: #c0cfff;
+}
+DIV.diffobj-container.light.yb SPAN.diffobj-word.delete,
+DIV.diffobj-container.light.yb DIV.diffobj-line>DIV.delete {
+  background-color: #e7e780;
+}
+DIV.diffobj-container.light.yb DIV.diffobj-text>DIV.insert {
+  background-color: #efefff;
+}
+DIV.diffobj-container.light.yb DIV.diffobj-text>DIV.insert,
+DIV.diffobj-container.light.yb DIV.diffobj-line>DIV.insert {
+  border-left: 1px solid #3333bb;
+}
+DIV.diffobj-container.light.yb DIV.diffobj-text>DIV.delete {
+  background-color: #fefee5;
+}
+DIV.diffobj-container.light.yb DIV.diffobj-text>DIV.delete,
+DIV.diffobj-container.light.yb DIV.diffobj-line>DIV.delete {
+  border-left: 1px solid #aaaa55;
+}
+DIV.diffobj-container.light.yb DIV.diffobj-header {
+  background-color: #afafaf;
+  border-left: 1px solid #e3e3e3;
+  color: #e9e9e9;
+}
+DIV.diffobj-container.light.yb DIV.diffobj-line {
+  background-color: #eeeeee;
+}
+</style>
+<div class="diffobj-container light yb">
+<pre class='diffobj-content'><div class='diffobj-row'><div class='diffobj-line banner'><div class='delete'><div class='diffobj-gutter'><div class='delete'>&lt;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='delete'><span class='diffobj-word delete'>doublex</span></div></div></div></div><div class='diffobj-line banner'><div class='insert'><div class='diffobj-gutter'><div class='insert'>&gt;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='insert'><span class='diffobj-word insert'>doublexret</span></div></div></div></div></div><div class='diffobj-row'><div class='diffobj-line'><div class='diffobj-header'>@@ 1,3 @@</div></div><div class='diffobj-line'><div class='diffobj-header'>@@ 1,4 @@</div></div></div><div class='diffobj-row'><div class='diffobj-line'><div class='diffobj-match'><div class='diffobj-gutter'><div class='diffobj-match'>&nbsp;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='diffobj-match'><span class='diffobj-trim'></span>function(x) {<span class='diffobj-trim'></span></div></div></div></div><div class='diffobj-line'><div class='diffobj-match'><div class='diffobj-gutter'><div class='diffobj-match'>&nbsp;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='diffobj-match'><span class='diffobj-trim'></span>function(x) {<span class='diffobj-trim'></span></div></div></div></div></div><div class='diffobj-row'><div class='diffobj-line'><div class='diffobj-match'><div class='diffobj-gutter'><div class='diffobj-match'>&nbsp;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='diffobj-match'><span class='diffobj-trim'></span>  x &lt;- x + x<span class='diffobj-trim'></span></div></div></div></div><div class='diffobj-line'><div class='diffobj-match'><div class='diffobj-gutter'><div class='diffobj-match'>&nbsp;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='diffobj-match'><span class='diffobj-trim'></span>  x &lt;- x + x<span class='diffobj-trim'></span></div></div></div></div></div><div class='diffobj-row'><div class='diffobj-line'><div class='diffobj-fill'><div class='diffobj-gutter'><div class='diffobj-fill'>~</div><div class='pad'> </div></div><div class='diffobj-text'><div class='diffobj-fill'></div></div></div></div><div class='diffobj-line'><div class='insert'><div class='diffobj-gutter'><div class='insert'>&gt;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='insert'><span class='diffobj-trim'></span>  <span class='diffobj-word insert'>x</span><span class='diffobj-trim'></span></div></div></div></div></div><div class='diffobj-row'><div class='diffobj-line'><div class='diffobj-match'><div class='diffobj-gutter'><div class='diffobj-match'>&nbsp;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='diffobj-match'><span class='diffobj-trim'></span>}<span class='diffobj-trim'></span></div></div></div></div><div class='diffobj-line'><div class='diffobj-match'><div class='diffobj-gutter'><div class='diffobj-match'>&nbsp;</div><div class='pad'> </div></div><div class='diffobj-text'><div class='diffobj-match'><span class='diffobj-trim'></span>}<span class='diffobj-trim'></span></div></div></div></div></div></pre>
+</div>
+</section></section>
+<section id="references" class="title-slide slide level1 unnumbered"><h1>References</h1><div id="refs" class="references" role="doc-bibliography">
+<div id="ref-betancourt2017">
+<p>Betancourt, Michael. 2017. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <em>arXiv Preprint arXiv:1701.02434</em>.</p>
+</div>
+<div id="ref-feng20">
+<p>Feng, Chi. 2016. “MCMC Demo.” <em>GitHub Repository</em>. <a href="https://github.com/chi-feng/mcmc-demo">https://github.com/chi-feng/mcmc-demo</a>; GitHub.</p>
+</div>
+<div id="ref-gelman13">
+<p>Gelman, Andrew, John B Carlin, Hal S Stern, David B Dunson, Aki Vehtari, and Donald B Rubin. 2013. <em>Bayesian Data Analysis</em>. CRC press.</p>
+</div>
+<div id="ref-hoffman2014">
+<p>Hoffman, Matthew D, and Andrew Gelman. 2014. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” <em>J. Mach. Learn. Res.</em> 15 (1): 1593–1623.</p>
+</div>
+</div></section>
+    </div>
+  </div>
+
+  <script src="Presentation_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="Presentation_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true,
+        // Vertical centering of slides
+        center: false,
+        // Transition style
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+
+        menu: {
+          custom: false,
+          themes: false,
+          transitions: false
+        },
+
+
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'Presentation_files/reveal.js-3.3.0.1/plugin/zoom-js/zoom.js', async: true },
+          { src: 'Presentation_files/reveal.js-3.3.0.1/plugin/menu/menu.js', async: true },
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>

@@ -15,6 +15,33 @@ library(ggplot2)
 library(gridExtra)
 ```
 
+20-Dimensional Multivariate Normal
+
+```{r, eval=longrun}
+posterior_density = mvtnorm::dmvnorm
+gradient <- function(position){-position}
+sample50norm <- sample_noUturn(position_init = runif(50, -5, -2), iteration = 500, is_log = FALSE)
+```
+
+```{r, echo =FALSE, eval=longrun}
+saveRDS(sample20norm, file = "files/sample20norm.rds")
+```
+
+```{r, echo = FALSE, eval =!longrun}
+sample20norm <- readRDS("files/sample20norm.rds")
+```
+
+```{r traceplot}
+ggplot(data = sample50norm, aes(x = seq_len(500), y = X1)) +
+  geom_line()
+ggplot(data = sample50norm, aes(x = X1)) +
+  geom_density()
+```
+
+
+
+
+
 <!--
 To recheck the code is still up to date and syntax sticks to the current mlr3 version initialize `long_run = TRUE`.
 This will run *all* code chunks no matter the computational effort.
@@ -81,17 +108,30 @@ design <- scale(trainPID[, -9])
 scale_train <- attributes(design)[c("scaled:center", "scaled:scale")]
 design <- cbind(1, design)
 target <- as.numeric(trainPID$diabetes)
-target[which(target == 2)] = -1 # Change classlevels to {-1, 1}
+target[which(target == 2)] = 0 # Change classlevels to {-1, 1}
 ```
 
 Define posterior and gradient function
 
 ```{r}
-# TODO: describe functions and how we got there
-
 devtools::load_all()
-posterior_density = sigmoid_posterior
+posterior_density = bernoulli_pen
 gradient = partial_deriv_sigmoid
+```
+```{r}
+library(hmclearn)
+data(Endometrial)
+
+# data prep
+Endometrial$PI2 <- with(Endometrial, (PI - mean(PI)) / sd(PI))
+Endometrial$EH2 <- with(Endometrial, (EH - mean(EH)) / sd(EH))
+Endometrial$NV2 <- Endometrial$NV - 0.5
+
+X <- cbind(1, as.matrix(Endometrial[, which(colnames(Endometrial)
+            %in% c("PI2", "EH2", "NV2"))]))
+y <- Endometrial$HG
+
+colnames(X) <- c("(Intercept)", "PI2", "EH2", "NV2")
 ```
 
 
@@ -103,18 +143,15 @@ to consider spirals nonlinear structure.
 
 ```{r, eval=longrun}
 start <- Sys.time()
-scale_estimate <- list(c(75, 125), c(-25, 25), c(-125, -75), c(0, 50),
-                       c(50, 100), c(-75, -25), c(-50, 50), c(-25, 25),
-                       c(0, 50))
-initial_pos <- lapply(1:3, function(x) sapply(scale_estimate, function(y) runif(1, y[1], y[2])))
-sigmoid_parameter_distrib <- lapply(initial_pos, naive_nouturn_sampler, stepsize = .01, iteration = 2e3, design = design, target = target, is_log = TRUE, seed = 123L)
+initial_pos <- lapply(1:3, function(x) runif(9, -5, 5))
+sigmoid_parameter_distrib <- lapply(initial_pos, sample_noUturn, iteration = 2e3, design = design, target = target, is_log = TRUE, seed = 123L, target_accpentance = .39, max_tree_depth = 11L)
 dif2000iter <- Sys.time() - start
 dif2000iter
 ```
 
 ```{r eval=longrun, echo=FALSE}
-saveRDS(object = dif2000iter, file = "runtime2000iter.RDS")
-saveRDS(object = sigmoid_parameter_distrib, file = "sigmoid_parameter_distrib.RDS")
+saveRDS(object = dif3000iter, file = "runtime2000iter.RDS")
+saveRDS(object = sigmoid_parameter_distrib2, file = "sigmoid_parameter_distrib2.RDS")
 ```
 
 ```{r eval=!longrun, echo=FALSE}
@@ -126,33 +163,27 @@ sigmoid_parameter_distrib <- readRDS("sigmoid_parameter_distrib.RDS")
 
 Acceptance rate
 
-Quick reminder: good indicator is a accaptance around 50%
-
-```{r}
-lapply(sigmoid_parameter_distrib, function(x) mean(x$acceptance_rate))
-lapply(sigmoid_parameter_distrib, function(x) mean(x$tree_depth))
-```
-
-
 Trace Plot for parameters
 
 ```{r}
-calculate_traceplots <- function(var, varname, lim = c(-150, 150), iter = 2e3){
-  ggplot(data = sigmoid_parameter_distrib[[1]], aes_string(x = seq_len(iter), y = var)) +
-    geom_line(color = "red") + labs(x = "iteration", y = varname) + ylim(lim) +
-    geom_line(data =sigmoid_parameter_distrib[[2]],
+calculate_traceplots <- function(var, varname, lim = c(-50, 100), iter = 3e3){
+  ggplot(data = sigmoid_parameter_distrib2[[1]], aes_string(x = seq_len(iter), y = var)) +
+    geom_line(color = "red") + labs(x = "iteration", y = varname) +# ylim(lim) +
+    geom_line(data =sigmoid_parameter_distrib2[[2]],
             aes_string(x = seq_len(iter), y = var), color = "blue") +
-    geom_line(data =sigmoid_parameter_distrib[[3]],
+    geom_line(data =sigmoid_parameter_distrib2[[3]],
             aes_string(x = seq_len(iter), y = var), color = "green")
     #annotate("rect", xmin = 1251, xmax = 2000, ymin = -150, ymax = 150, alpha = .2)
 }
 
 args <- list(
   list(var = "X1", varname = "intercept"), list(var = "X2", varname = "slope2"),
-  list(var = "X3", varname = "slope3"), list(var = "X4", varname = "slope4"),
+  list(var = "X3", varname = "slope3"), list(var = "X4", varname = "slope4")
+  ,
   list(var = "X5", varname = "slope5"), list(var = "X6", varname = "slope6"),
   list(var = "X7", varname = "slope7"), list(var = "X8", varname = "slope8"),
-  list(var = "X9", varname = "slope9"))
+  list(var = "X9", varname = "slope9")
+  )
 # lapply(scale_estimate, function(x) args$lim <- x)
 
 traceplots <- lapply(args, function(x) do.call(calculate_traceplots, x))
@@ -166,8 +197,8 @@ Slopes seem to converge after 1000 to 1250 iterations, while intercept is alread
 \rightarrow Leave out first 1250 iterations as burn in and calculate position estimates means and variance
 
 ```{r}
-param_distrib <- lapply(sigmoid_parameter_distrib, function(x){
-  x[-seq_len(1e3),]
+param_distrib <- lapply(sigmoid_parameter_distrib2, function(x){
+  x[-seq_len(1000),]
 })
 
 calc_density_plots <- function(var, varname) {
@@ -189,7 +220,25 @@ do.call(grid.arrange, c(density, nrow = 3))
 mean_estimate <- lapply(param_distrib, colMeans)
 
 calc <- lapply(mean_estimate, function(x) {
-  design %*% x[-c(10,11)]
+  1- 2/(1+ exp(design %*% x[-c(10,11)]))
+})
+lapply(calc, function(x){
+  sum(abs(round(target - x)) == 2) / nrow(x)
+})
+```
+
+```{r}
+test_target <- as.numeric(testPID$diabetes)
+test_target[which(test_target ==2)] = -1
+
+design_test <- cbind(1, scale(as.matrix(testPID[, -9])))
+
+
+calc <- lapply(mean_estimate, function(x) {
+  1- 2/(1+ exp(design_test %*% x[-c(10,11)]))
+})
+lapply(calc, function(x){
+  sum(abs(round(test_target - x)) == 2) / nrow(x)
 })
 ```
 

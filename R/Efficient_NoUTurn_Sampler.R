@@ -8,9 +8,11 @@
 #' @param target_accpentance targeted average acceptance rate of proposals
 #'
 sample_noUturn <- function(position_init, iteration, seed = 1234L, stepsize = NULL,
-                           adaption, target_accpentance = 0.65, design = NULL, target = NULL, is_log = TRUE) {
+                           adaption = 0.5 * iteration, target_accpentance = 0.65,
+                           design = NULL, target = NULL, is_log = TRUE, max_tree_depth = 10L) {
+  pb <- txtProgressBar(min = 0, max = iteration, style = 3)
   set.seed(seed)
-  if(is.null(stepsize)) stepsize <- find_initial_stepsize(position_init)
+  if(is.null(stepsize)) stepsize <- find_initial_stepsize(position_init, design, target, is_log)
   duala_params <- init_parmeters(stepsize) # This is made fromheuristics, params can be adapted in init_params
   if(is.data.frame(design)) design <- as.matrix(design)
   position <- position_init
@@ -21,27 +23,39 @@ sample_noUturn <- function(position_init, iteration, seed = 1234L, stepsize = NU
     slice <- runif(1L, max = exp(joint_probability(position, momentum, design, target, is_log = is_log)))
     # Initialize state to call on Build Tree
     state <- initialize_state(position, momentum, efficient = TRUE)
+    state$count <- 1
     iter <- list("position" = position, "momentum" = momentum)
     tree_depth <- 0L
     while(state$run) {
       # 1 means forward, -1 means backward doubling
       direction <- sample(c(-1L, 1L), 1L)
-      state_proposal <- if(direction == -1) {
-        build_efficient_tree(state$leftmost, slice, direction, tree_depth, stepsize, design, target, iter = iter)
+      if(direction == -1) {
+        state_proposal <- build_efficient_tree(state$leftmost, slice, direction,
+                                               tree_depth, stepsize = stepsize, design = design,
+                                               target = target, is_log = is_log, iter = iter)
+        state$leftmost <- state_proposal$leftmost
       } else{
-        build_efficient_tree(state$rightmost, slice, direction, tree_depth, stepsize, design, target, iter = iter)
+        state_proposal <- build_efficient_tree(state$rightmost, slice, direction,
+                                               tree_depth, stepsize = stepsize, design = design,
+                                               target = target, is_log = is_log, iter = iter)
+        state$rightmost <- state_proposal$rightmost
       }
       if(state_proposal$run) {
-        rate <- min(state_proposal$count / (state_proposal$count + state$count), 1)
-        if(runif(1)<= rate) state$valid_state <- state_proposal$valid_state
+        rate <- min(state_proposal$count / state$count, 1)
+        if(rbinom(n = 1, size = 1, prob = rate)) state$valid_state <- state_proposal$valid_state
       }
       state$count <- state_proposal$count + state$count
       state$run <- state_proposal$run * is_U_turn(state = state)
+      if(tree_depth > max_tree_depth){
+        #warning("NUTS: Reached max tree depth")
+        break
+      }
       tree_depth <- tree_depth + 1
     }
+    setTxtProgressBar(pb, m)
     if(m <= adaption) {
       duala_params <- update_stepsize(duala_params, m, target_accpentance,
-                                      state$acceptance$acceptance / state$acceptance$nacceptance)
+                                      state_proposal$acceptance$acceptance / state_proposal$acceptance$nacceptance)
       stepsize <- duala_params$stepsize[m + 1]
     }
     if(m == adaption) {
@@ -51,7 +65,7 @@ sample_noUturn <- function(position_init, iteration, seed = 1234L, stepsize = NU
     if(!is.null(state$valid_state$position)) position <- as.numeric(state$valid_state$position)
     positions[m, ] <- position
   }
-  structure(cbind(positions, "tree_depth" = tree_depths),
+  structure(positions, "tree_depth" = tree_depths,
             "dual_averaging" = duala_params)
 }
 
@@ -87,9 +101,11 @@ init_parmeters <- function(stepsize, level = NULL, stepsize_weight = 1,
 #' @param average_acceptance average achieved acceptance in iteration m
 #'
 update_stepsize <- function(dap, iter, target_accpentance, average_acceptance) {
-  weight <- (iter + stability)^(-1)
+  weight <- (iter + dap$stability)^(-1)
   dap$mcmc_behavior[iter + 1] = (1 - weight) * dap$mcmc_behavior[iter] + weight * (target_accpentance - average_acceptance)
-  dap$stepsize[iter + 1] <- exp(level - sqrt(iter) / shrinkage * dap$mcmc_behavior[iter + 1])
-  dap$stepsize_weight[iter + 1] <- exp(iter^(-adaption) * log(dap$stepsize[iter + 1]) + (1 - iter^(-adaption)) * dap$stepsize[iter])
+  dap$stepsize[iter + 1] <- exp(dap$level - ((sqrt(iter) / dap$shrinkage) * dap$mcmc_behavior[iter + 1]))
+  dap$stepsize_weight[iter + 1] <- exp(iter^(-dap$adaption) * log(dap$stepsize[iter + 1]) +
+                                         (1 - iter^(-dap$adaption)) * log(dap$stepsize_weight[iter]))
+
   dap
 }
