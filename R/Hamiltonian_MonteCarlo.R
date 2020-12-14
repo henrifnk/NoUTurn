@@ -28,7 +28,6 @@ hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
       gradient <- gradient(proposal$position)
       proposal <- do.call(leapfrog, c(proposal, stepsize, gradient))
     }
-
   # Like in Metropolis-Hastings, we compare the (unnormalized) posterior
   # density at our proposal with the density at our previously drawn
   # position in the ratio of those two estimates, which will form the

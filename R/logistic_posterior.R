@@ -45,8 +45,8 @@ bernoulli_pen <- function(position, design = NULL, target = NULL, sigma = 200L) 
   if(is.data.frame(position)) position <- as.numeric(position)
   comp1 <- as.numeric(t(position) %*% t(design) %*% (target - 1))
   comp2 <- sum(log(1 + exp(-(design %*% position))))
-  penal <- as.numeric(((2 * sigma ^ 2) ^(-1)) * t(position) %*% position)
-  comp1 - comp2
+  penal <- as.numeric(((2 * sigma) ^(-1)) * t(position) %*% position)
+  comp1 - comp2  - penal
 }
 
 partial_deriv_benoulli <- function(position, design = NULL, target = NULL, sigma = 200L){
@@ -54,4 +54,19 @@ partial_deriv_benoulli <- function(position, design = NULL, target = NULL, sigma
   comp1 <- (target - 1) + (sigmoid_exp / (1 + sigmoid_exp))
   comp2 <- t(design) %*% comp1
   comp2 - (position / sigma)
+}
+
+gamma_distr <- function(position, design, target, sigma = 10L){
+  if(is.data.frame(design)) design <- as.matrix(design)
+  lin_predict <- design %*% position
+  comp1 <- (-target * exp(-lin_predict)) - lin_predict
+  penal <- as.numeric(((2 * sigma) ^(-1)) * t(position) %*% position)
+  sum(comp1 - penal)
+}
+
+partial_deriv_gamma <- function(position, design, target, sigma = 10L){
+  if(is.data.frame(design)) design <- as.matrix(design)
+  lin_pred <- design %*% position
+  comp1 <- as.vector(target %*% design * sum(exp(lin_predict)) - apply(design, 2, sum))
+  comp1 - position/sigma
 }

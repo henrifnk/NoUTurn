@@ -267,3 +267,61 @@ spirals+
   geom_raster(data = as.data.frame(grid), aes(x = dim1, y = dim2, fill = estimates))
 ```
 
+# Regression
+
+Data Set Information:
+
+The data was retrieved from a set of 53500 CT images from 74 different
+patients (43 male, 31 female).
+
+Each CT slice is described by two histograms in polar space.
+The first histogram describes the location of bone structures in the image,
+the second the location of air inclusions inside of the body.
+Both histograms are concatenated to form the final feature vector.
+Bins that are outside of the image are marked with the value -0.25.
+
+The class variable (relative location of an image on the axial axis) was
+constructed by manually annotating up to 10 different distinct landmarks in
+each CT Volume with known location. The location of slices in between
+landmarks was interpolated.
+
+
+Attribute Information:
+
+1. patientId: Each ID identifies a different patient
+2. - 241.: Histogram describing bone structures
+242. - 385.: Histogram describing air inclusions
+386. reference: Relative location of the image on the axial axis (class
+value). Values are in the range [0; 180] where 0 denotes
+the top of the head and 180 the soles of the feet.
+
+```{r}
+tmp <- tempfile()
+download.file(
+  "https://archive.ics.uci.edu/ml/machine-learning-databases/00206/slice_localization_data.zip",
+  tmp)
+ct_slice <- read.csv(unz(tmp, filename = "slice_localization_data.csv"), as.is = TRUE)
+```
+
+```{r}
+id <- sample(seq_len(53500), 1e4)
+trainCT <- ct_slice[id, ]
+target <- trainCT[, 386]
+design <- as.matrix(cbind(1, trainCT[, -386]))
+c(min(target), max(target)) # -> map on real numbers, maybe gamma distrib...
+```
+
+```{r}
+devtools::load_all()
+posterior_density = gamma_distr
+gradient = partial_deriv_gamma
+```
+
+```{r}
+start <- Sys.time()
+initial_pos <- lapply(1:3, function(x) runif(386, -20, 20))
+sigmoid_parameter_distrib <- lapply(initial_pos, sample_noUturn, iteration = 10, design = design, target = target, is_log = TRUE, seed = 123L, target_accpentance = .65, max_tree_depth = 11L)
+dif2000iter <- Sys.time() - start
+dif2000iter
+```
+
