@@ -19,12 +19,12 @@ library(gridExtra)
 
 ```{r, eval=longrun}
 posterior_density = mvtnorm::dmvnorm
-gradient <- function(position){-position}
-sample50norm <- sample_noUturn(position_init = runif(50, -5, -2), iteration = 500, is_log = FALSE)
+gradient <- function(position){exp(-position)}
+sample50norm <- sample_noUturn(position_init = runif(50, -5, -2), iteration = 2e3, is_log = FALSE)
 ```
 
 ```{r, echo =FALSE, eval=longrun}
-saveRDS(sample20norm, file = "files/sample20norm.rds")
+saveRDS(sample50norm, file = "files/sample50norm.rds")
 ```
 
 ```{r, echo = FALSE, eval =!longrun}
@@ -32,9 +32,9 @@ sample20norm <- readRDS("files/sample20norm.rds")
 ```
 
 ```{r traceplot}
-ggplot(data = sample50norm, aes(x = seq_len(500), y = X1)) +
+ggplot(data = sample20norm, aes(x = seq_len(2000), y = X1)) +
   geom_line()
-ggplot(data = sample50norm, aes(x = X1)) +
+ggplot(data = sample20norm, aes(x = X1)) +
   geom_density()
 ```
 
@@ -49,75 +49,6 @@ This will run *all* code chunks no matter the computational effort.
 
 ## SetUp Experiment
 
-Generate spiral data set from `mlbench` package
-Note: as sigmoid maps from $\mathbb{R}$ to binary classes $[0, 1]$ we need to respecify our target weights here.
-
-```{r, eval=longrun}
-data(PimaIndiansDiabetes)
-#sample 70% train dataset
-id <- sample(seq_len(nrow(PimaIndiansDiabetes)), size = 0.7*nrow(PimaIndiansDiabetes))
-trainPID <-  PimaIndiansDiabetes[id, ]
-testPID <- PimaIndiansDiabetes[-id, ]
-str(PimaIndiansDiabetes)
-```
-
-### Data Set
-
-The data set is comprised of 768 observations and 9 variables. It is available in the package mlbench. We will be using diabetes as our response/target variable.
-
-Data Description for the 9 variables are as follows.
-
-pregnant - Number of times pregnant
-glucose - Plasma glucose concentration (glucose tolerance test)
-pressure - Diastolic blood pressure (mm Hg)
-triceps - Triceps skin fold thickness (mm)
-insulin - 2-Hour serum insulin (mu U/ml)
-mass - Body mass index (weight in kg/(height in m)^2)
-pedigree - Diabetes pedigree function
-age - Age (years)
-diabetes - Class variable (test for diabetes)
-
-```{r}
-DataExplorer::plot_density(data = trainPID)
-
-ggplot(trainPID, aes(diabetes, fill = diabetes)) + 
-  geom_bar() +
-  theme_bw() +
-  labs(title = "Diabetes Classification", x = "Diabetes") +
-  theme(plot.title = element_text(hjust = 0.5))
-```
-
-
-```{r eval=longrun, echo=FALSE}
-saveRDS(object = trainPID, file = "files/train.RDS")
-saveRDS(object = testPID, file = "files/test.RDS")
-```
-
-```{r eval=!longrun, echo=FALSE}
-trainPID <- readRDS("files/train.RDS")
-testPID <- readRDS("files/test.RDS")
-```
-
-## Scaling
-
-Scale for better distribution around 0
-
-
-```{r}
-design <- scale(trainPID[, -9])
-scale_train <- attributes(design)[c("scaled:center", "scaled:scale")]
-design <- cbind(1, design)
-target <- as.numeric(trainPID$diabetes)
-target[which(target == 2)] = 0 # Change classlevels to {-1, 1}
-```
-
-Define posterior and gradient function
-
-```{r}
-devtools::load_all()
-posterior_density = bernoulli_pen
-gradient = partial_deriv_sigmoid
-```
 ```{r}
 library(hmclearn)
 data(Endometrial)
@@ -132,6 +63,14 @@ X <- cbind(1, as.matrix(Endometrial[, which(colnames(Endometrial)
 y <- Endometrial$HG
 
 colnames(X) <- c("(Intercept)", "PI2", "EH2", "NV2")
+```
+
+Define posterior and gradient function
+
+```{r}
+devtools::load_all()
+posterior_density = bernoulli_pen
+gradient = partial_deriv_sigmoid
 ```
 
 
@@ -150,8 +89,8 @@ dif2000iter
 ```
 
 ```{r eval=longrun, echo=FALSE}
-saveRDS(object = dif3000iter, file = "runtime2000iter.RDS")
-saveRDS(object = sigmoid_parameter_distrib2, file = "sigmoid_parameter_distrib2.RDS")
+saveRDS(object = dif3000iter, file = "files/runtime2000iter.RDS")
+saveRDS(object = sigmoid_parameter_distrib2, file = "files/sigmoid_parameter_distrib2.RDS")
 ```
 
 ```{r eval=!longrun, echo=FALSE}

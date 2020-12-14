@@ -575,7 +575,7 @@ T_t(\theta^t|\theta^{t-1}) = \frac{\frac{p(\theta^*|y)}{J(\theta^*|\theta^{t-1})
 Hamiltonian Monte Carlo
 </h1>
 <center>
-<img src="files/HMC.png" width="75%" />
+<img src="files/HMC.png" width="876" />
 </center></section><section id="hmc-in-3-steps" class="slide level2">
 <h2>HMC in 3 steps:</h2>
 <ol type="1">
@@ -588,7 +588,7 @@ Hamiltonian Monte Carlo
 <div class="fragment">
 <h3 id="ingredients">Ingredients</h3>
 <ul>
-<li>(un-normalized) posterior density <span class="math inline">\(p(\theta|y)\)</span><br />
+<li>(un-normalized) log posterior density <span class="math inline">\(log(p(\theta|y))\)</span><br />
 </li>
 </ul>
 </div>
@@ -604,14 +604,12 @@ Hamiltonian Monte Carlo
 <span class="math inline">\(\rightarrow\)</span> usually <span class="math inline">\(\phi \sim \mathcal{N_d}(0, I)\)</span> where 0 denotes a zero vector of <span class="math inline">\(\mathbb{R^d}\)</span> and I denotes a <span class="math inline">\(\mathbb{R^{dxd}}\)</span> identity matrix</li>
 </ul>
 </div>
-</section><section id="intuition-of-leapfrogsteps" class="slide level2">
-<h2>Intuition of Leapfrogsteps</h2>
-<ul>
-<li class="fragment">Think of 3D density curvature</li>
-</ul>
-<ul>
-<li class="fragment">preserving the posterior for <span class="math inline">\(\lim_{e \to 0} p(\theta,\phi|y)\)</span></li>
-</ul>
+</section><section id="phylical-analogy---why-use-log" class="slide level2">
+<h2>Phylical analogy - Why use log?</h2>
+<center>
+<img src="files/log_gradient.png" width="50%" />
+</center>
+<p><span class="citation" data-cites="moore">Moore (n.d.)</span></p>
 <div class="fragment">
 <ul>
 <li>Suppose HMC moves towards <em>low posterior density regions</em>:</li>
@@ -776,15 +774,15 @@ sgn\Big(\frac{dlog_e(p(\theta|y))}{d\theta}\Big) = -1 \ \Rightarrow \ \phi\ decr
 </ul>
 </section><section id="hand-tuning-parameters" class="slide level2">
 <h2>(Hand-)Tuning Parameters</h2>
-<blockquote>
-<p><span class="math inline">\(\epsilon = stepsize\)</span><br />
-<span class="math inline">\(\mathcal{L} = \#Leapfrogsteps\)</span><br />
-<span class="math inline">\(\phi = momentum\)</span></p>
-</blockquote>
+<ul>
+<li><p><span class="math inline">\(\epsilon = stepsize\)</span></p></li>
+<li><p><span class="math inline">\(\mathcal{L} = \#Leapfrogsteps\)</span></p></li>
+<li><p><span class="math inline">\(\phi = momentum\)</span></p></li>
+</ul>
 <div class="fragment">
 <p>But how?</p>
 <center>
-<img src="files/halfpipe.gif" width="50%" />
+<img src="files/Questioning.gif" width="40%" />
 </center>
 </div>
 </section><section id="setting-the-tuning-parameters" class="slide level2">
@@ -826,7 +824,7 @@ sgn\Big(\frac{dlog_e(p(\theta|y))}{d\theta}\Big) = -1 \ \Rightarrow \ \phi\ decr
 <em>Riemanian Integral</em></li>
 </ol>
 <div class="fragment">
-<p><span class="math inline">\(\rightarrow\)</span> All three approaches may be combined. In the following we will discuss the implementation for a No-U-Turn sampler with dual averaging, as discussed in Gelman and Hoffman (2014).@hoffman2014</p>
+<p><span class="math inline">\(\rightarrow\)</span> All three approaches may be combined. In the following we will discuss the implementation for a No-U-Turn sampler with dual averaging, as discussed in Gelman and Hoffman (2014). <span class="citation" data-cites="hoffman2014">Hoffman and Gelman (2014)</span></p>
 </div>
 </section></section>
 <section><section id="section-3" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff" class="r-fit-text">
@@ -849,15 +847,22 @@ NOTES:
 </div>
 --></section><section id="heuristic-stopping-criteria" class="slide level2">
 <h2>Heuristic Stopping Criteria</h2>
-<p></small></p>
+</small>
+<div class="fragment">
 <ul>
 <li>Lets look at one iteration <span class="math inline">\(t\)</span> in HMC where we intentionally set
 <ol type="a">
 <li><span class="math inline">\(\mathcal{L_t}\)</span> to small</li>
 <li><span class="math inline">\(\mathcal{L_t}\)</span> to high</li>
 </ol></li>
-<li>The <span class="math inline">\(\mathcal{L_t}\)</span>-Leapfrog steps performed from starting state <span class="math inline">\(q_{right} = (\theta_{right}, r_{right})\)</span> in phase-space to their end after might look as follows <span class="math inline">\(\mathcal{L_t}\)</span> Leapfrogsteps <span class="math inline">\(q_{left} = (\theta_{left}, r_{left})\)</span></li>
 </ul>
+</div>
+<div class="fragment">
+<ul>
+<li>The <span class="math inline">\(\mathcal{L_t}\)</span>-Leapfrog steps performed from starting state <span class="math inline">\((\theta_{right}, r_{right})\)</span> in phase-space to their end <span class="math inline">\((\theta_{left}, r_{left})\)</span> after <span class="math inline">\(\mathcal{L_t}\)</span> Leapfrogsteps might look as follows:</li>
+</ul>
+</div>
+<div class="fragment">
 <center>
 <div class="figure">
 <img src="files/U-Turn-Criteria.png" alt="Left Plot: Expanding the trajectory in either direction typically extends the trajectory further  across the energy level set (grey) towards unexplored neighborhood. Right Plot: Further expansion typically contracts the boundaries of the trajectory towards each other and neighborhoods that have already been explored." width="50%" />
@@ -866,6 +871,7 @@ Left Plot: Expanding the trajectory in either direction typically extends the tr
 </p>
 </div>
 </center>
+</div>
 <p></small></p>
 </section><section id="criterion" class="slide level2">
 <h2>Criterion</h2>
@@ -874,12 +880,10 @@ Left Plot: Expanding the trajectory in either direction typically extends the tr
 r_{left} (\theta_{right} - \theta_{left}) &lt; 0\\
 r_{right} (\theta_{left} - \theta_{right}) &lt; 0
 \]</span></p>
-<blockquote>
+<div class="fragment">
 <p><em>Derivation:</em> this is basically a euclidean derivative w.r.t. time t of half the squared distance between two positions: <span class="math inline">\(\frac{d(\theta_1 - \theta_2)}{dt}\)</span>.</p>
-</blockquote>
-<blockquote>
 <p><em>Intuition:</em> this is the dot product of the two vectors from the picture. If the dot product gets higher than 0, the trajectory will make a <em>u-turn</em>. This is when we “traveled maximally” in phase space an so where we want to stop exploring the enery set.</p>
-</blockquote>
+</div>
 </section><section id="naive-stepwise-exploration-scheme" class="slide level2">
 <h2>Naive Stepwise Exploration Scheme</h2>
 <ol type="1">
@@ -888,9 +892,9 @@ r_{right} (\theta_{left} - \theta_{right}) &lt; 0
 <li class="fragment">Expand the trajectory and &amp; Repeat Checks</li>
 <li class="fragment">Return the sample once the criterion is met</li>
 </ol>
-<blockquote>
+<div class="fragment">
 <p>Naive Additive Scheme: Check the termination Criteria for each and every point between any two points Smart Multiplicative Scheme: Double the trajectory to the old trajectory and so create a balanced binary tree. Compare the criterion only between subtrees.</p>
-</blockquote>
+</div>
 </section><section id="doubling--expand-the-trajectory" class="slide level2">
 <h2>Doubling- expand the trajectory</h2>
 <center>
@@ -900,13 +904,17 @@ r_{right} (\theta_{left} - \theta_{right}) &lt; 0
 Typical doubling proccedure. The initial point is black. Each colour desricbes a new subtree.
 </p>
 </div>
+<span class="citation" data-cites="hoffman2014">Hoffman and Gelman (2014)</span>
 </center>
-<p><span class="citation" data-cites="hoffman2014">Hoffman and Gelman (2014)</span> The doubling is halted when the sub-trajectories from the leftmost to the rightmost nodes of any balanced binary tree start to double back on themselves.</p>
+<div class="fragment">
+<p>The doubling is halted when the sub-trajectories from the leftmost to the rightmost nodes of any balanced binary tree start to double back on themselves.</p>
 <p><em>Info:</em> We have to double fore- and backwards in our trajectory to guarantee reversibility in time <em>Problem</em>: this naive scheme still violates the reversibility criteria</p>
+</div>
 </section><section id="slice-to-the-rescue" class="slide level2">
 <h2>Slice to the Rescue</h2>
-<p>Some of the trajectory points sampled have to be condemn because they exhibit pathological behavior. To determine those points we introduce a slice variable <span class="math inline">\(u\)</span> to our posterior, such that <span class="math inline">\(p(u|\theta,r) = Unif(u; [0, e^{\mathcal{L}(\theta) - \frac{1}{2} &lt;r,r&gt;}])\)</span>, where <span class="math inline">\(p(\theta, r) \propto \mathcal{L}(\theta) - \frac{1}{2} &lt;r,r&gt;\)</span> is the log-joint distribution of <span class="math inline">\(\theta\)</span> an <span class="math inline">\(r\)</span>.</p>
-<p><span class="math inline">\(p(u, \theta,r) \propto \mathbb{I}[u \in [0, e^{p(\theta, r)}]]\)</span></p>
+<p>Some of the trajectory points sampled have to be condemn because they exhibit pathological behavior. To determine those points we introduce a slice variable <span class="math inline">\(u\)</span> to our posterior, such that <span class="math inline">\(p(u|\theta,r) = Unif(u; [0, e^{\mathcal{L}(\theta) - \frac{1}{2} &lt;r,r&gt;}])\)</span></p>
+<p>The joint distribution of <span class="math inline">\((u, \theta,r)\)</span> is then:<br />
+<span class="math inline">\(p(u, \theta,r) \propto \mathbb{I}[u \in [0, e^{p(\theta, r)}]]\)</span></p>
 <p><em>Alternative:</em> draw multinomial over states in the trajectory</p>
 </section><section id="mathcalb-mathcalc-in-nuts" class="slide level2">
 <h2><span class="math inline">\(\mathcal{B}, \mathcal{C}\)</span> in NUTS</h2>
@@ -1336,10 +1344,195 @@ Example of a trajectory generated during one iteration of NUTS.
 <span id="cb14-67"><a href="#cb14-67"></a>  }</span>
 <span id="cb14-68"><a href="#cb14-68"></a>}</span></code></pre></div>
 </section></section>
-<section id="section-4" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff" class="r-fit-text">
+<section><section id="section-4" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff" class="r-fit-text">
 No-U-Turn Sampler with dual averaging
 </h1>
-<p><img src="files/NUTS.png" width="876" /></p></section>
+<center>
+<img src="files/NUTS.png" width="876" />
+</center></section><section id="problems-solutions" class="slide level2">
+<h2>Problems &amp; Solutions</h2>
+<p>Naive NUTS requires:</p>
+<ul>
+<li class="fragment"><span class="math inline">\(2^{j}-1\)</span> evaluations of log-posterior <span class="math inline">\(log(p(\theta))\)</span> and its gradient <span class="math inline">\(\Delta_{\theta}log(p(\theta))\)</span></li>
+</ul>
+<ul>
+<li class="fragment"><span class="math inline">\(\mathcal{O}(2^j)\)</span> evaluations when to stop doubling</li>
+</ul>
+<ul>
+<li class="fragment">store <span class="math inline">\(2^j\)</span> position and momentum vectors at each iteration</li>
+</ul>
+<div class="fragment">
+<p>Idea:</p>
+<ul>
+<li>Implement a transition kernel that produces larger jumps than uniform sampling while keeping <span class="math inline">\(\mathcal{C}\)</span> balanced.</li>
+</ul>
+</div>
+</section><section id="efficient-nuts" class="slide level2">
+<h2>Efficient NUTS</h2>
+<p>For each subtree <span class="math inline">\(\mathcal{B_{st}}\)</span> in <span class="math inline">\(\mathcal{B}\)</span>:</p>
+<ul>
+<li class="fragment">sample a valid state <span class="math inline">\((\theta, r) \in \mathcal{C_{st}}\)</span> as representee</li>
+</ul>
+<ul>
+<li class="fragment">choose a pair by giving them a weight proportional to their subtrees element size</li>
+</ul>
+<div class="fragment">
+<ul>
+<li><p><span class="math inline">\(\rightarrow\)</span> this method stores only <span class="math inline">\(\mathcal{O}(j)\)</span> position momentum vectors and</p></li>
+<li><p>is sparse at calculating the gradient as build tree can be canceled early if U-turn was made</p></li>
+</ul>
+</div>
+</section><section id="adaptively-tuning-the-stepsize" class="slide level2">
+<h2>Adaptively tuning the stepsize</h2>
+<div class="fragment">
+<p><em>Suppose</em> we aim for a target average acceptance probability <span class="math inline">\(\delta (= 0.65)\)</span>.</p>
+<p><em>Suppose</em> our average acceptance at iteration t is <span class="math inline">\(\alpha_t\)</span></p>
+<p>Let <span class="math inline">\(H_t = \delta - \alpha_t\)</span> then be our MCMC behavior at iteration t</p>
+<p><em>Goal:</em> reach <span class="math inline">\(H_t \approx 0\)</span></p>
+</div>
+<div class="fragment">
+<p><em>Update</em> <span class="math inline">\(\epsilon\)</span> as follows:</p>
+<p><span class="math inline">\(\epsilon_{t+1} =\epsilon_t - \eta_tH_t, \ \eta_t \in (0,1]\)</span></p>
+</div>
+<div class="fragment">
+<p>If acceptance <span class="math inline">\(\alpha_t\)</span> was to high we encourage the algorithm for larger jumps, rising <span class="math inline">\(\epsilon_{t+1}\)</span> If acceptance <span class="math inline">\(\alpha_t\)</span> was to low we encourage the algorithm for smaller jumps, decreasing <span class="math inline">\(\epsilon_{t+1}\)</span></p>
+</div>
+</section><section id="implement-efficient-nuts-with-dual-averaging" class="slide level2">
+<h2>Implement efficient NUTS with dual averaging</h2>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">#&#39; Build Trees doubles the positions and momentum and such the trajectory length</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="co">#&#39;</span></span>
+<span id="cb15-3"><a href="#cb15-3"></a><span class="co">#&#39; Repeatedly called by NUTS until run == FALSE, that is when a U-Turn is performed.</span></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="co">#&#39;</span></span>
+<span id="cb15-5"><a href="#cb15-5"></a><span class="co">#&#39; @param position_momentum list, containing actual position and momentum</span></span>
+<span id="cb15-6"><a href="#cb15-6"></a><span class="co">#&#39; @param slice drawn slice sample to validate position-/momentum steps</span></span>
+<span id="cb15-7"><a href="#cb15-7"></a><span class="co">#&#39; @param direction determines whether trajectory should explore forwards or backwards</span></span>
+<span id="cb15-8"><a href="#cb15-8"></a><span class="co">#&#39; @param tree_depth balanced tree depth with momentum and position states in the tree nodes</span></span>
+<span id="cb15-9"><a href="#cb15-9"></a><span class="co">#&#39; @param is_log logical, indicator if joint probability is already logged</span></span>
+<span id="cb15-10"><a href="#cb15-10"></a><span class="co">#&#39; @param stepsize parsed stepsize \epsilon to Leapfrog step function</span></span>
+<span id="cb15-11"><a href="#cb15-11"></a><span class="co">#&#39; @param design design matrix of features for linear modell</span></span>
+<span id="cb15-12"><a href="#cb15-12"></a><span class="co">#&#39; @param target target variable to validate predictions</span></span>
+<span id="cb15-13"><a href="#cb15-13"></a><span class="co">#&#39; @param deltamax stop if the error in simulation increases</span></span>
+<span id="cb15-14"><a href="#cb15-14"></a><span class="co">#&#39; @param run independent argument that tells build tree if stopping criteria is met</span></span>
+<span id="cb15-15"><a href="#cb15-15"></a><span class="co">#&#39; @param valid_states all valid states visited so far</span></span>
+<span id="cb15-16"><a href="#cb15-16"></a><span class="co">#&#39;</span></span>
+<span id="cb15-17"><a href="#cb15-17"></a>build_tree_simply &lt;-<span class="st"> </span><span class="cf">function</span>(position_momentum, slice, direction, tree_depth,</span>
+<span id="cb15-18"><a href="#cb15-18"></a>                              is_log, stepsize, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>,</span>
+<span id="cb15-19"><a href="#cb15-19"></a>                              <span class="dt">deltamax =</span> 1000L, <span class="dt">run =</span> <span class="dv">1</span>,</span>
+<span id="cb15-20"><a href="#cb15-20"></a>                              <span class="dt">valid_states =</span> <span class="kw">structure</span>(<span class="kw">vector</span>(<span class="st">&quot;list&quot;</span>, <span class="dt">length =</span> 2L))) {</span>
+<span id="cb15-21"><a href="#cb15-21"></a>  <span class="co">###### Base Case ###########################################</span></span>
+<span id="cb15-22"><a href="#cb15-22"></a>  <span class="co"># if tree_depth is zero: Call build leaf,</span></span>
+<span id="cb15-23"><a href="#cb15-23"></a>  <span class="co"># take one leapfrog step into direction</span></span>
+<span id="cb15-24"><a href="#cb15-24"></a>  <span class="cf">if</span>(tree_depth <span class="op">==</span><span class="st"> </span>0L) {</span>
+<span id="cb15-25"><a href="#cb15-25"></a>    <span class="kw">build_leaf</span>(position_momentum, slice, direction, tree_depth,</span>
+<span id="cb15-26"><a href="#cb15-26"></a>               <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb15-27"><a href="#cb15-27"></a>               <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log)</span>
+<span id="cb15-28"><a href="#cb15-28"></a>  } <span class="cf">else</span> {</span>
+<span id="cb15-29"><a href="#cb15-29"></a>    <span class="co">###### Recursion ###########################################</span></span>
+<span id="cb15-30"><a href="#cb15-30"></a>    <span class="co"># Recursion- build left/right subtrees</span></span>
+<span id="cb15-31"><a href="#cb15-31"></a>    <span class="co"># Call build_tree at tree_depth - 1 twice</span></span>
+<span id="cb15-32"><a href="#cb15-32"></a>    <span class="co"># leapfrogsteps will get called 2^treedepth times</span></span>
+<span id="cb15-33"><a href="#cb15-33"></a>    state &lt;-<span class="st"> </span><span class="kw">build_tree</span>(position_momentum, slice, direction, tree_depth <span class="op">-</span><span class="st"> </span>1L,</span>
+<span id="cb15-34"><a href="#cb15-34"></a>                        <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb15-35"><a href="#cb15-35"></a>                        <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log, <span class="dt">run =</span> run,</span>
+<span id="cb15-36"><a href="#cb15-36"></a>                        <span class="dt">valid_states =</span> valid_states)</span>
+<span id="cb15-37"><a href="#cb15-37"></a>    <span class="co"># After calling the second build_tree, assign depending on</span></span>
+<span id="cb15-38"><a href="#cb15-38"></a>    <span class="co"># direction left or rightmost node to state, which will be returned</span></span>
+<span id="cb15-39"><a href="#cb15-39"></a>    <span class="cf">if</span>(direction <span class="op">==</span><span class="st"> </span><span class="op">-</span>1L) {</span>
+<span id="cb15-40"><a href="#cb15-40"></a>      state1 &lt;-<span class="st"> </span><span class="kw">build_tree</span>(state<span class="op">$</span>leftmost, slice, direction, tree_depth <span class="op">-</span><span class="st"> </span>1L,</span>
+<span id="cb15-41"><a href="#cb15-41"></a>                           <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb15-42"><a href="#cb15-42"></a>                           <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log, <span class="dt">run =</span> run,</span>
+<span id="cb15-43"><a href="#cb15-43"></a>                           <span class="dt">valid_states =</span> valid_states)</span>
+<span id="cb15-44"><a href="#cb15-44"></a>      state<span class="op">$</span>leftmost &lt;-<span class="st"> </span>state1<span class="op">$</span>leftmost</span>
+<span id="cb15-45"><a href="#cb15-45"></a>    } <span class="cf">else</span> {</span>
+<span id="cb15-46"><a href="#cb15-46"></a>      state1 &lt;-<span class="st"> </span><span class="kw">build_tree</span>(state<span class="op">$</span>rightmost, slice, direction, tree_depth <span class="op">-</span><span class="st"> </span>1L,</span>
+<span id="cb15-47"><a href="#cb15-47"></a>                           <span class="dt">stepsize =</span> stepsize, <span class="dt">deltamax =</span> deltamax, <span class="dt">design =</span> design,</span>
+<span id="cb15-48"><a href="#cb15-48"></a>                           <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log, <span class="dt">run =</span> run,</span>
+<span id="cb15-49"><a href="#cb15-49"></a>                           <span class="dt">valid_states =</span> valid_states)</span>
+<span id="cb15-50"><a href="#cb15-50"></a>      state<span class="op">$</span>rightmost &lt;-<span class="st"> </span>state1<span class="op">$</span>rightmost</span>
+<span id="cb15-51"><a href="#cb15-51"></a>    }</span>
+<span id="cb15-52"><a href="#cb15-52"></a>    <span class="co">###### Return State #######################################</span></span>
+<span id="cb15-53"><a href="#cb15-53"></a>    <span class="co"># Check if any stopping criteria was met during recursion</span></span>
+<span id="cb15-54"><a href="#cb15-54"></a>    <span class="co"># update valid states by unioning states from both build</span></span>
+<span id="cb15-55"><a href="#cb15-55"></a>    <span class="co"># tree calls</span></span>
+<span id="cb15-56"><a href="#cb15-56"></a>    run &lt;-<span class="st"> </span>run <span class="op">*</span><span class="st"> </span>state1<span class="op">$</span>run <span class="op">*</span><span class="st"> </span>state<span class="op">$</span>run <span class="op">*</span><span class="st"> </span><span class="kw">is_U_turn</span>(state)</span>
+<span id="cb15-57"><a href="#cb15-57"></a>    state<span class="op">$</span>run &lt;-<span class="st"> </span>run</span>
+<span id="cb15-58"><a href="#cb15-58"></a>    valid_states<span class="op">$</span>position &lt;-<span class="st"> </span><span class="kw">rbind</span>(valid_states<span class="op">$</span>position,</span>
+<span id="cb15-59"><a href="#cb15-59"></a>                                   state<span class="op">$</span>valid_state<span class="op">$</span>position,</span>
+<span id="cb15-60"><a href="#cb15-60"></a>                                   state1<span class="op">$</span>valid_state<span class="op">$</span>position)</span>
+<span id="cb15-61"><a href="#cb15-61"></a>    valid_states<span class="op">$</span>momentum &lt;-<span class="st"> </span><span class="kw">rbind</span>(valid_states<span class="op">$</span>momentum,</span>
+<span id="cb15-62"><a href="#cb15-62"></a>                                   state<span class="op">$</span>valid_state<span class="op">$</span>momentum,</span>
+<span id="cb15-63"><a href="#cb15-63"></a>                                   state1<span class="op">$</span>valid_state<span class="op">$</span>momentum)</span>
+<span id="cb15-64"><a href="#cb15-64"></a>    state<span class="op">$</span>valid_state<span class="op">$</span>position &lt;-<span class="st"> </span>valid_states<span class="op">$</span>position</span>
+<span id="cb15-65"><a href="#cb15-65"></a>    state<span class="op">$</span>valid_state<span class="op">$</span>momentum &lt;-<span class="st"> </span>valid_states<span class="op">$</span>momentum</span>
+<span id="cb15-66"><a href="#cb15-66"></a>    <span class="kw">return</span>(state)</span>
+<span id="cb15-67"><a href="#cb15-67"></a>  }</span>
+<span id="cb15-68"><a href="#cb15-68"></a>}</span></code></pre></div>
+<!--
+Why -1 one here?
+-->
+</section></section>
+<section><section id="section-5" class="title-slide slide level1" data-background="files/stan.png" data-background-size="800px 600px"><h1></h1></section><section id="presettings" class="slide level2">
+<h2>Presettings</h2>
+<p><strong>Loading the package</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">library</span>(<span class="st">&quot;rstan&quot;</span>)</span></code></pre></div>
+<p><strong>To estimate your model in parallel</strong></p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel<span class="op">::</span><span class="kw">detectCores</span>())</span></code></pre></div>
+<p>Automatically save a bare version of a compiled Stan program to the hard disk so that it does not need to be recompiled</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">rstan_options</span>(<span class="dt">auto_write =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<p>You will need to run these commands each time you load the rstan library.</p>
+</section><section id="example-eight-schools---setup" class="slide level2">
+<h2>Example Eight Schools - SetUp</h2>
+<p>This is an example in Section 5.5 of <span class="citation" data-cites="gelman13">Gelman et al. (2013)</span>, which studied coaching effects from eight schools.</p>
+<p>We start by writing a Stan program for the model in a text file. If you are using RStudio click on <code>File -&gt; New File -&gt; Stan File</code> . Either way, paste in the following and save your work to a file called <code>schools.stan</code> in R’s working directory.</p>
+<pre class="stan"><code>// saved as schools.stan
+data {
+  int&lt;lower=0&gt; J;         // number of schools 
+  real y[J];              // estimated treatment effects
+  real&lt;lower=0&gt; sigma[J]; // standard error of effect estimates 
+}
+parameters {
+  real mu;                // population treatment effect
+  real&lt;lower=0&gt; tau;      // standard deviation in treatment effects
+  vector[J] eta;          // unscaled deviation from mu by school
+}
+transformed parameters {
+  vector[J] theta = mu + tau * eta;        // school treatment effects
+}
+model {
+  target += normal_lpdf(eta | 0, 1);       // prior log-density
+  target += normal_lpdf(y | theta, sigma); // log-likelihood
+}
+</code></pre>
+<p>In this Stan program, we let <code>theta</code> be a transformation of <code>mu</code>, <code>eta</code>, and <code>tau</code> instead of declaring <code>theta</code> in the <code>parameters</code> block, which allows the sampler will run more efficiently (<a href="http://mc-stan.org/documentation/case-studies/divergences_and_bias.html">see detailed explanation</a>). We can prepare the data (which typically is a named list) in R with:</p>
+</section><section id="example-eight-schools---run" class="slide level2">
+<h2>Example Eight Schools - Run</h2>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>schools_dat &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">J =</span> <span class="dv">8</span>, </span>
+<span id="cb20-2"><a href="#cb20-2"></a>                    <span class="dt">y =</span> <span class="kw">c</span>(<span class="dv">28</span>,  <span class="dv">8</span>, <span class="dv">-3</span>,  <span class="dv">7</span>, <span class="dv">-1</span>,  <span class="dv">1</span>, <span class="dv">18</span>, <span class="dv">12</span>),</span>
+<span id="cb20-3"><a href="#cb20-3"></a>                    <span class="dt">sigma =</span> <span class="kw">c</span>(<span class="dv">15</span>, <span class="dv">10</span>, <span class="dv">16</span>, <span class="dv">11</span>,  <span class="dv">9</span>, <span class="dv">11</span>, <span class="dv">10</span>, <span class="dv">18</span>))</span></code></pre></div>
+<p>And we can get a fit with the following R command. Note that the argument to <code>file =</code> should point to where the file is on your file system unless you have put it in the working directory of R in which case the below will work.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">file =</span> <span class="st">&#39;schools.stan&#39;</span>, <span class="dt">data =</span> schools_dat)</span></code></pre></div>
+<p>The object <code>fit</code>, returned from function <code>stan</code> is an <a href="https://cran.r-project.org/package=rstan/vignettes/stanfit-objects.html">S4 object</a> of class <code>stanfit</code>.</p>
+</section><section id="example-eight-schools---evaluate" class="slide level2">
+<h2>Example Eight Schools - Evaluate</h2>
+<p>Methods such as <code>print</code>, <code>plot</code>, and <code>pairs</code> are associated with the fitted result so we can use the following code to check out the results in <code>fit</code>. <code>print</code> provides a summary for the parameter of the model as well as the log-posterior with name <code>lp__</code> (see the following example output). For more methods and details of class <code>stanfit</code>, see the help of class <code>stanfit</code>. We can use the <code>extract</code> function on <code>stanfit</code> objects to obtain the samples.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">print</span>(fit)</span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="kw">plot</span>(fit)</span>
+<span id="cb22-3"><a href="#cb22-3"></a></span>
+<span id="cb22-4"><a href="#cb22-4"></a>la &lt;-<span class="st"> </span><span class="kw">extract</span>(fit, <span class="dt">permuted =</span> <span class="ot">TRUE</span>) <span class="co"># return a list of arrays </span></span>
+<span id="cb22-5"><a href="#cb22-5"></a>mu &lt;-<span class="st"> </span>la<span class="op">$</span>mu </span>
+<span id="cb22-6"><a href="#cb22-6"></a></span>
+<span id="cb22-7"><a href="#cb22-7"></a><span class="co">### return an array of three dimensions: iterations, chains, parameters </span></span>
+<span id="cb22-8"><a href="#cb22-8"></a>a &lt;-<span class="st"> </span><span class="kw">extract</span>(fit, <span class="dt">permuted =</span> <span class="ot">FALSE</span>) </span>
+<span id="cb22-9"><a href="#cb22-9"></a></span>
+<span id="cb22-10"><a href="#cb22-10"></a><span class="co">### use S3 functions on stanfit objects</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a>a2 &lt;-<span class="st"> </span><span class="kw">as.array</span>(fit)</span>
+<span id="cb22-12"><a href="#cb22-12"></a>m &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit)</span>
+<span id="cb22-13"><a href="#cb22-13"></a>d &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(fit)</span></code></pre></div>
+</section><section id="example-eight-schools---plot-distributions" class="slide level2">
+<h2>Example Eight Schools - Plot Distributions</h2>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">pairs</span>(fit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;tau&quot;</span>, <span class="st">&quot;lp__&quot;</span>))</span></code></pre></div>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-39-1.png" /><!-- --></p>
+</section></section>
 <section id="references" class="title-slide slide level1 unnumbered"><h1>References</h1><div id="refs" class="references" role="doc-bibliography">
 <div id="ref-betancourt2017">
 <p>Betancourt, Michael. 2017. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <em>arXiv Preprint arXiv:1701.02434</em>.</p>
@@ -1352,6 +1545,9 @@ No-U-Turn Sampler with dual averaging
 </div>
 <div id="ref-hoffman2014">
 <p>Hoffman, Matthew D, and Andrew Gelman. 2014. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” <em>J. Mach. Learn. Res.</em> 15 (1): 1593–1623.</p>
+</div>
+<div id="ref-moore">
+<p>Moore, Jacob. n.d. <em>MCMC from Scratch</em>. <a href="https://colab.research.google.com/drive/1YQBSfS1Nb8a9TAMsV1RjWsiErWqXLbrj">https://colab.research.google.com/drive/1YQBSfS1Nb8a9TAMsV1RjWsiErWqXLbrj</a>.</p>
 </div>
 </div></section>
     </div>
