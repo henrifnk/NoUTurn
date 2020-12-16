@@ -47,7 +47,7 @@ build_tree <- function(position_momentum, slice, direction, tree_depth, is_log,
 }
 
 build_efficient_tree <- function(position_momentum, slice, direction, tree_depth,
-                                 iter, is_log, stepsize, design = NULL, target = NULL, deltamax = 1000L,
+                                 iter, is_log, stepsize, design = NULL, target = NULL, deltamax = 1e50L,
                                  run = 1, count = 0, acceptance = 0, nacceptance = 0) {
   if(tree_depth == 0L) {# Basecase - take one leapfrogstep into direction
     build_leaf(position_momentum, slice, direction, tree_depth, stepsize, deltamax,
@@ -115,7 +115,7 @@ build_leaf <- function(position_momentum, slice, direction, tree_depth, stepsize
     proposal_state$acceptance$acceptance <- min(1, quotient_lik)
     proposal_state$valid_state <- step
   }
-  proposal_state$run <- 0 + (exp(proposal_density + deltamax) > slice)
+  proposal_state$run <- if(slice > 0) 0 + (exp(proposal_density + deltamax) > slice) else 1
   proposal_state
 }
 # ______________________________________________________________________________

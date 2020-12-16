@@ -7,24 +7,21 @@
 #' @param adaption iterations where  stepsize is adapted. Must be smaller than iterations.
 #' @param target_accpentance targeted average acceptance rate of proposals
 #'
-sample_noUturn <- function(position_init, iteration, seed = 1234L, stepsize = NULL,
+sample_noUturn <- function(position_init, iteration,
                            adaption = 0.5 * iteration, target_accpentance = 0.65,
                            design = NULL, target = NULL, is_log = TRUE, max_tree_depth = 10L) {
-  pb <- txtProgressBar(min = 0, max = iteration, style = 3)
-  set.seed(seed)
-  if(is.null(stepsize)) stepsize <- find_initial_stepsize(position_init, design, target, is_log)
-  duala_params <- init_parmeters(stepsize) # This is made fromheuristics, params can be adapted in init_params
-  if(is.data.frame(design)) design <- as.matrix(design)
+  stepsize <- find_initial_stepsize(position_init, design, target, is_log)
+  duala_params <- init_parmeters(stepsize)
   position <- position_init
   positions <- data.frame(matrix(ncol = length(position_init), nrow = iteration))
-  tree_depths <- vector("numeric", length = iteration)
   for(m in seq_len(iteration)) {
     momentum <- rnorm(length(position))
-    slice <- runif(1L, max = exp(joint_probability(position, momentum, design, target, is_log = is_log)))
+    iter <- list("position" = position, "momentum" = momentum)
+    slice <- runif(1L, max = exp(joint_probability(position, momentum, design,
+                                                   target, is_log = is_log)))
     # Initialize state to call on Build Tree
     state <- initialize_state(position, momentum, efficient = TRUE)
     state$count <- 1
-    iter <- list("position" = position, "momentum" = momentum)
     tree_depth <- 0L
     while(state$run) {
       # 1 means forward, -1 means backward doubling
@@ -47,12 +44,11 @@ sample_noUturn <- function(position_init, iteration, seed = 1234L, stepsize = NU
       state$count <- state_proposal$count + state$count
       state$run <- state_proposal$run * is_U_turn(state = state)
       if(tree_depth > max_tree_depth){
-        #warning("NUTS: Reached max tree depth")
+        warning("NUTS: Reached max tree depth")
         break
       }
       tree_depth <- tree_depth + 1
     }
-    setTxtProgressBar(pb, m)
     if(m <= adaption) {
       duala_params <- update_stepsize(duala_params, m, target_accpentance,
                                       state_proposal$acceptance$acceptance / state_proposal$acceptance$nacceptance)
@@ -67,46 +63,4 @@ sample_noUturn <- function(position_init, iteration, seed = 1234L, stepsize = NU
   }
   structure(positions, "tree_depth" = tree_depths,
             "dual_averaging" = duala_params)
-}
-
-#' Initialize parameters for dual averaging
-#'
-#' @param level where stepsize is shrunken towards (\mhy)
-#' @param stepsize_weight weighted stepsize from previous iteration
-#' @param mcmc_behavoir behavior of algorithm at previous iterations
-#' @param shrinkage controls the amount of shrinkage
-#' @param stability controls stability at early iterations
-#' @param adaption controls the speed of converges and so the influence of more recent weights
-#'
-init_parmeters <- function(stepsize, level = NULL, stepsize_weight = 1,
-                           mcmc_behavior = 0, shrinkage = 0.05,
-                           stability = 10, adaption = 0.75) {
-  if(is.null(level)) level <- log(10 * stepsize)
-
-  list(
-    "stepsize" = stepsize,
-    "level" = level, "stepsize_weight" = stepsize_weight,
-    "mcmc_behavior" = mcmc_behavior, "shrinkage" = shrinkage,
-    "stability" = stability, "adaption" = adaption
-  )
-}
-
-
-#' update stepsize
-#'
-#' updates stpesize parameters by performing dual averaging
-#'
-#' @inheritParams sample_noUturn
-#' @param dap dual_avereging_params parameters necessary for dual averaging
-#' @param iter actual iteration cycle
-#' @param average_acceptance average achieved acceptance in iteration m
-#'
-update_stepsize <- function(dap, iter, target_accpentance, average_acceptance) {
-  weight <- (iter + dap$stability)^(-1)
-  dap$mcmc_behavior[iter + 1] = (1 - weight) * dap$mcmc_behavior[iter] + weight * (target_accpentance - average_acceptance)
-  dap$stepsize[iter + 1] <- exp(dap$level - ((sqrt(iter) / dap$shrinkage) * dap$mcmc_behavior[iter + 1]))
-  dap$stepsize_weight[iter + 1] <- exp(iter^(-dap$adaption) * log(dap$stepsize[iter + 1]) +
-                                         (1 - iter^(-dap$adaption)) * log(dap$stepsize_weight[iter]))
-
-  dap
 }
