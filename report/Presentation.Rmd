@@ -14,12 +14,12 @@ output:
     fig_caption: yes
     reveal_options:
       slideNumber: true
-    autosize: true
 header-includes:
   - \usepackage{diffcoeff,amssymb}
 bibliography: references.bib
 vertical-center : true
 ---
+
 # {data-background=#262626}
 
 <h1 style="color: #fff">Metropolis(-Hastings) Algorithm</h1>
@@ -79,9 +79,13 @@ $J(\cdot)$ is only useful jumping distibution, if:
 
 ## Random Walk Problem
 
-```{r, echo=FALSE, out.width='75%'}
+<center>
+```{r, echo=FALSE, out.width='50%'}
 knitr::include_graphics("files/HMC_multimodal.gif")
 ```
+</center>
+
+
 @feng20
 
 > * Gibbs and MH spend a lot of time zigging and zagging in the target distribution
@@ -405,7 +409,7 @@ Some of the trajectory points sampled have to be condemn because they exhibit pa
 ```{r echo=FALSE, out.width="50%"}
 knitr::include_graphics("files/Leapfrog_Discretization.png")
 ```
-<center>
+</center>
 
 <div class="fragment">
 To determine those points we introduce a slice variable $u$ to our posterior
@@ -436,7 +440,7 @@ This is comparable to the acceptance / rejection step in HMC
 ## $\mathcal{B}, \mathcal{C}$ in NUTS
 
 $\mathcal{B}$: constituted by all leaves of the binary tree generated in the doubling proccedure of one NUTS iteration.
-If $j$ denotes the depth of a tree the amount of visited states through doubling in leapfrog trajectory is $\#\mathcal{B} = 2^j$.  
+If $j$ denotes the depth of a tree the amount of visited states through doubling in leapfrog trajectory is $\#\mathcal{B} = 2^j-1$.  
 $\mathcal{C}$: contains all valid states visited.
 
 <div class="fragment">
@@ -492,27 +496,35 @@ So basically if $p(\hat{\theta}, \hat{r})$ is the proportional likelihood is way
 
 ## Implement Build Trees - Initialize
 
-```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree.R")[c(1:20, 68)]}
+```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree_naive.R")[c(1:20, 68)]}
 ```
 
 ## Implement Build Trees - Base Case
 
-```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree.R")[c(1:28, 51, 68)]}
+```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree_naive.R")[c(1:28, 51, 68)]}
 ```
 
 ## Implement Build Leaf
 
-```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree.R")[70:104]}
+```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree_naive.R")[70:104]}
 ```
 
 ## Implement Build Trees - Doubled Recurion
 
-```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree.R")[c(1:51, 67, 68)]}
+```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree_naive.R")[c(1:51, 67, 68)]}
 ```
+
+## Example - Recursion with `tree_depth = 3`
+
+<center>
+```{r, echo=FALSE}
+knitr::include_graphics("files/recursion.svg")
+```
+</center>
 
 ## Implement Build Trees - Update State
 
-```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree.R")[c(1:68)]}
+```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Build_Tree_naive.R")[c(1:68)]}
 ```
 
 

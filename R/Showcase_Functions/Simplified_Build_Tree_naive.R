@@ -14,16 +14,17 @@
 #' @param run independent argument that tells build tree if stopping criteria is met
 #' @param valid_states all valid states visited so far
 #'
-build_tree_efficient <- function(position_momentum, slice, direction, tree_depth,
+build_tree_simply <- function(position_momentum, slice, direction, tree_depth,
                               is_log, stepsize, design = NULL, target = NULL,
-                              deltamax = 1000L, run = 1, iter, count = 0) {
+                              deltamax = 1000L, run = 1,
+                              valid_states = structure(vector("list", length = 2L))) {
   ###### Base Case ###########################################
   # if tree_depth is zero: Call build leaf,
   # take one leapfrog step into direction
   if(tree_depth == 0L) {
     build_leaf(position_momentum, slice, direction, tree_depth,
                stepsize = stepsize, deltamax = deltamax, design = design,
-               target = target, is_log = is_log, iter = iter, count = count)
+               target = target, is_log = is_log)
   } else {
     ###### Recursion ###########################################
     # Recursion- build left/right subtrees
@@ -31,39 +32,44 @@ build_tree_efficient <- function(position_momentum, slice, direction, tree_depth
     # leapfrogsteps will get called 2^treedepth times
     state <- build_tree(position_momentum, slice, direction, tree_depth - 1L,
                         stepsize = stepsize, deltamax = deltamax, design = design,
-                        target = target, is_log = is_log, run = run, iter = iter, count = count)
+                        target = target, is_log = is_log, run = run,
+                        valid_states = valid_states)
     # After calling the second build_tree, assign depending on
     # direction left or rightmost node to state, which will be returned
-    if(state$run){
     if(direction == -1L) {
       state1 <- build_tree(state$leftmost, slice, direction, tree_depth - 1L,
                            stepsize = stepsize, deltamax = deltamax, design = design,
-                           target = target, is_log = is_log, run = run, iter = iter, count = count)
+                           target = target, is_log = is_log, run = run,
+                           valid_states = valid_states)
       state$leftmost <- state1$leftmost
     } else {
-        state1 <- build_tree(state$rightmost, slice, direction, tree_depth - 1L,
+      state1 <- build_tree(state$rightmost, slice, direction, tree_depth - 1L,
                            stepsize = stepsize, deltamax = deltamax, design = design,
-                           target = target, is_log = is_log, run = run, iter = iter, count = count)
-        state$rightmost <- state1$rightmost
+                           target = target, is_log = is_log, run = run,
+                           valid_states = valid_states)
+      state$rightmost <- state1$rightmost
     }
     ###### Return State #######################################
     # Check if any stopping criteria was met during recursion
     # update valid states by unioning states from both build
     # tree calls
-    rate <- state1$count / (state1$count + state$count)
-    if(!is.na(rate) && runif(1) <= rate) state$valid_state <- position_momentum
-    count <- count + state$count + state1$count
     run <- run * state1$run * state$run * is_U_turn(state)
-    state$count <- count
     state$run <- run
-    }
+    valid_states$position <- rbind(valid_states$position,
+                                   state$valid_state$position,
+                                   state1$valid_state$position)
+    valid_states$momentum <- rbind(valid_states$momentum,
+                                   state$valid_state$momentum,
+                                   state1$valid_state$momentum)
+    state$valid_state$position <- valid_states$position
+    state$valid_state$momentum <- valid_states$momentum
     return(state)
   }
 }
 
-build_leaf_efficient <- function(position_momentum, slice, direction, tree_depth,
+build_leaf_simply <- function(position_momentum, slice, direction, tree_depth,
                               stepsize, deltamax, design = NULL, target = NULL,
-                              is_log, iter) {
+                              is_log) {
   ###### Call Gradient #####################################
   # We call the posteriors gradient at the current state of
   # our position momentum
@@ -93,7 +99,6 @@ build_leaf_efficient <- function(position_momentum, slice, direction, tree_depth
                                                    "is_log" = is_log))
   valid <- slice <= exp(proposal_density)
   if(valid) proposal_state$valid_state <- step
-  proposal_state$count <- as.numeric(valid)
   proposal_state$run <- 0 + (proposal_density > log(slice) - deltamax)
   proposal_state
 }

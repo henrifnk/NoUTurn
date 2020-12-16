@@ -568,7 +568,10 @@ $J(\cdot)$ is only useful jumping distibution, if:
 </div>
 --></section><section id="random-walk-problem" class="slide level2">
 <h2>Random Walk Problem</h2>
-<p><img src="files/HMC_multimodal.gif" width="75%" /> <span class="citation" data-cites="feng20">Feng (2016)</span></p>
+<center>
+<img src="files/HMC_multimodal.gif" width="50%" />
+</center>
+<p><span class="citation" data-cites="feng20">Feng (2016)</span></p>
 <ul>
 <li class="fragment">Gibbs and MH spend a lot of time zigging and zagging in the target distribution</li>
 </ul>
@@ -968,7 +971,7 @@ Typical doubling proccedure. The initial point is black. Each colour desricbes a
 Some of the trajectory points sampled have to be condemn because they exhibit pathological behavior.
 <center>
 <img src="files/Leapfrog_Discretization.png" width="50%" />
-<center>
+</center>
 <div class="fragment">
 <p>To determine those points we introduce a slice variable <span class="math inline">\(u\)</span> to our posterior</p>
 </div>
@@ -989,7 +992,7 @@ u \leq exp(\mathcal{L}(\hat{\theta}) - \frac{1}{2} &lt;\hat{r},\hat{r}&gt;)
 </div>
 </section><section id="mathcalb-mathcalc-in-nuts" class="slide level2">
 <h2><span class="math inline">\(\mathcal{B}, \mathcal{C}\)</span> in NUTS</h2>
-<p><span class="math inline">\(\mathcal{B}\)</span>: constituted by all leaves of the binary tree generated in the doubling proccedure of one NUTS iteration. If <span class="math inline">\(j\)</span> denotes the depth of a tree the amount of visited states through doubling in leapfrog trajectory is <span class="math inline">\(\#\mathcal{B} = 2^j\)</span>.<br />
+<p><span class="math inline">\(\mathcal{B}\)</span>: constituted by all leaves of the binary tree generated in the doubling proccedure of one NUTS iteration. If <span class="math inline">\(j\)</span> denotes the depth of a tree the amount of visited states through doubling in leapfrog trajectory is <span class="math inline">\(\#\mathcal{B} = 2^j-1\)</span>.<br />
 <span class="math inline">\(\mathcal{C}\)</span>: contains all valid states visited.</p>
 <div class="fragment">
 <center>
@@ -1357,6 +1360,11 @@ Example of a trajectory generated during one iteration of NUTS.
 <span id="cb9-51"><a href="#cb9-51"></a>    }</span>
 <span id="cb9-52"><a href="#cb9-52"></a>  }</span>
 <span id="cb9-53"><a href="#cb9-53"></a>}</span></code></pre></div>
+</section><section id="example---recursion-with-tree_depth-3" class="slide level2">
+<h2>Example - Recursion with <code>tree_depth = 3</code></h2>
+<center>
+<img data-src="files/recursion.svg" /><!-- -->
+</center>
 </section><section id="implement-build-trees---update-state" class="slide level2">
 <h2>Implement Build Trees - Update State</h2>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">#&#39; Build Trees doubles the positions and momentum and such the trajectory length</span></span>
@@ -1788,7 +1796,7 @@ log(\overline{\epsilon}^t) =t^{-\kappa} \epsilon^t + (1-t^{-\kappa}) \overline{\
 <span id="cb15-3"><a href="#cb15-3"></a>sample50norm &lt;-<span class="st"> </span><span class="kw">sample_noUturn</span>(<span class="dt">position_init =</span> <span class="kw">runif</span>(<span class="dv">50</span>, <span class="dv">-5</span>, <span class="dv">-2</span>), <span class="dt">iteration =</span> <span class="fl">2e3</span>, <span class="dt">is_log =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 <div class="fragment">
 <p>Trace the algorithm:</p>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-42-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-43-1.png" /><!-- --></p>
 </div>
 </section><section id="regression---an-artificial-data-set" class="slide level2">
 <h2>Regression - an artificial data set</h2>
@@ -1797,7 +1805,7 @@ log(\overline{\epsilon}^t) =t^{-\kappa} \epsilon^t + (1-t^{-\kappa}) \overline{\
 <span id="cb16-2"><a href="#cb16-2"></a>perfect_position &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span>
 <span id="cb16-3"><a href="#cb16-3"></a>target &lt;-<span class="st"> </span>design <span class="op">%*%</span><span class="st"> </span>perfect_position <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">400</span>)</span></code></pre></div>
 <p>Take a look at the data:</p>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-44-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-45-1.png" /><!-- --></p>
 </section><section id="regression---comparison" class="slide level2">
 <h2>Regression - Comparison</h2>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">lm</span>(target<span class="op">~</span>., <span class="dt">data =</span> <span class="kw">as.data.frame</span>(design[,<span class="op">-</span><span class="dv">1</span>]))</span></code></pre></div>
@@ -1807,7 +1815,7 @@ log(\overline{\epsilon}^t) =t^{-\kappa} \epsilon^t + (1-t^{-\kappa}) \overline{\
 ## 
 ## Coefficients:
 ## (Intercept)           V1           V2  
-##       1.085        1.820        2.864</code></pre>
+##       1.042        2.090        3.039</code></pre>
 </section><section id="regression---set-up-nuts" class="slide level2">
 <h2>Regression - Set Up NUTS</h2>
 <div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>posterior_density =<span class="st"> </span>log_linear</span>
@@ -1816,7 +1824,7 @@ log(\overline{\epsilon}^t) =t^{-\kappa} \epsilon^t + (1-t^{-\kappa}) \overline{\
 <span id="cb20-2"><a href="#cb20-2"></a>                         <span class="dt">is_log =</span> <span class="ot">TRUE</span>, <span class="dt">seed =</span> 123L, <span class="dt">target_accpentance =</span> <span class="fl">.65</span>, <span class="dt">max_tree_depth =</span> 12L)</span></code></pre></div>
 </section><section id="regression---trace-plot-for-parameters" class="slide level2">
 <h2>Regression - Trace Plot for parameters</h2>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-50-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-51-1.png" /><!-- --></p>
 </section><section id="classification---endometrial-data-set" class="slide level2">
 <h2>Classification - Endometrial data Set</h2>
 <ul>
@@ -1914,14 +1922,14 @@ f(\boldsymbol\beta | \mathbf{X}, \mathbf{y}, \sigma^2) &amp;\propto f(\mathbf{y}
 <span id="cb25-3"><a href="#cb25-3"></a><span class="kw">ggplot</span>(stepsize, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">seq_len</span>(<span class="dv">2501</span>), <span class="dt">y =</span> V1)) <span class="op">+</span></span>
 <span id="cb25-4"><a href="#cb25-4"></a><span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
 <span id="cb25-5"><a href="#cb25-5"></a><span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> V2), <span class="dt">colour =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;log stepsize value during Warm Up&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;iteration&quot;</span>)</span></code></pre></div>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-56-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-57-1.png" /><!-- --></p>
 <p>Sationary epsilon after adaptive Warm Up:</p>
 </section><section id="classification---check-convergence-by-traceplots" class="slide level2">
 <h2>Classification - Check Convergence by Traceplots</h2>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-58-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-59-1.png" /><!-- --></p>
 </section><section id="classification---check-convergence-by-density-plots" class="slide level2">
 <h2>Classification - Check Convergence by Density Plots</h2>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-59-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-60-1.png" /><!-- --></p>
 </section><section id="classification---prediction-and-comparison" class="slide level2">
 <h2>Classification - Prediction and Comparison</h2>
 <div class="fragment">
@@ -2123,7 +2131,7 @@ model {
 </section><section id="example-eight-schools---plot-distributions" class="slide level2">
 <h2>Example Eight Schools - Plot Distributions</h2>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="kw">pairs</span>(fit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;tau&quot;</span>, <span class="st">&quot;lp__&quot;</span>))</span></code></pre></div>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-75-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-76-1.png" /><!-- --></p>
 </section></section>
 <section id="references" class="title-slide slide level1 unnumbered"><h1>References</h1><div id="refs" class="references" role="doc-bibliography">
 <div id="ref-betancourt2017">

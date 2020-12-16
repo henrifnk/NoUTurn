@@ -7,7 +7,7 @@
 #' @param target a target feature vector if posterior is a model
 #' @param is_log if the likelihood is already logged
 #'
-sample_naiveNUTS <- function(position_init, stepsize, iteration, design = NULL, target = NULL, is_log = TRUE) {
+sample_efficientNUTS <- function(position_init, stepsize, iteration, design = NULL, target = NULL, is_log = TRUE) {
   ###### Preparation ############################################
   # initial position will be our starting value for the algorithm
   # positions will be a list containing all of our sampled positions
@@ -29,6 +29,7 @@ sample_naiveNUTS <- function(position_init, stepsize, iteration, design = NULL, 
     slice <- runif(1L, max = exp(joint_probability(position, momentum, design, target)))
     state <- initialize_state(position, momentum)
     tree_depth <- 0L
+    state$count <- 1
     ###### Build Tree ##########################################
     # While our Leapfrogsteps didn't made a U-Turn we do:
     # 1) sample a direction to integrate Leapfrogsteps
@@ -58,19 +59,18 @@ sample_naiveNUTS <- function(position_init, stepsize, iteration, design = NULL, 
           state$valid_state <- unite_valid_states(state, state_proposal)
         }
       }
+      if(state_proposal$run) {
+        rate <- min(state_proposal$count / state$count, 1)
+        if(runif(1) < rate) state$valid_state <- state_proposal$valid_state
+      }
+      state$count <- state_proposal$count + state$count
       state$run <- state_proposal$run * is_U_turn(state = state)
       tree_depth <- tree_depth + 1
     }
     # Use the Transition kernel:
-    # Sample uniformly one of the valid states drawn through Leapfrog steps
-    if(is.matrix(state$valid_state$position) ||
-       is.data.frame(state$valid_state$position)) {
-      row_id <- sample(seq_len(nrow(state$valid_state$position)), 1L)
-      positions[m, ] <- state$valid_state$position[row_id, ]
-      position = as.numeric(positions[m, ])
-    } else {
-      positions[m, ] <- position
-    }
+    # If there is a valid state, use it for the next iteration
+    if(!is.null(state$valid_state$position)) position <- as.numeric(state$valid_state$position)
+    positions[m, ] <- position
   }
   positions
 }
