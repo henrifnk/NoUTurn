@@ -41,7 +41,7 @@ partial_deriv_sigmoid <- function(position, design = NULL, target = NULL, sigma 
 }
 
 #' @see https://cran.r-project.org/web/packages/hmclearn/vignettes/logistic_regression_hmclearn.html
-bernoulli_pen <- function(position, design = NULL, target = NULL, sigma = 1e4) {
+bernoulli_pen <- function(position, sigma = 1e4) {
   if(is.data.frame(position)) position <- as.numeric(position)
   comp1 <- as.numeric(t(position) %*% t(design) %*% (target - 1))
   comp2 <- sum(log(1 + exp(-(design %*% position))))
@@ -49,7 +49,7 @@ bernoulli_pen <- function(position, design = NULL, target = NULL, sigma = 1e4) {
   comp1 - comp2  - penal
 }
 
-partial_deriv_benoulli <- function(position, design = NULL, target = NULL, sigma = 1e4){
+partial_deriv_benoulli <- function(position, sigma = 1e4){
   sigmoid_exp <- exp(-(design %*% position))
   comp1 <- (target - 1) + (sigmoid_exp / (1 + sigmoid_exp))
   comp2 <- t(design) %*% comp1
@@ -77,10 +77,10 @@ partial_deriv_gamma <- function(position, design, target, sigma = 100L){
 }
 
 
-log_linear <- function(position, design, target, sigma =10L){
-  sum((-2*sigma^(-2))*(target - design%*%position)^2)
+log_linear <- function(position, sigma = 10L){
+  sum((-2*sigma^(-2))*(target - design %*% position)^2)
 }
 
-partial_deriv_lin <- function(position, design, target, sigma =10L){
-  -sigma^(-2) * t(design) %*% (target - design %*% position)
+partial_deriv_lin <- function(position,sigma =10L){
+  -sigma^(-2) * t(design) %*% (-target + design %*% position)
 }

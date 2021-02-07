@@ -20,10 +20,55 @@ library(gridExtra)
 ## 20-Dimensional Multivariate Normal
 
 ```{r, eval=longrun}
-posterior_density = mvtnorm::dmvnorm
-gradient <- function(position){-position}
-sample50norm <- sample_noUturn(position_init = runif(50, -5, -2), iteration = 2e3, is_log = FALSE)
+set.seed(1234L)
+covariance <- clusterGeneration::genPositiveDefMat(
+			dim = 250,
+			covMethod = "eigen", 
+			eigenvalue = runif(250, 0, 1000))
+
+inverse_covar <- solve(covariance$Sigma)
+
+posterior_density  <- function(x) mvtnorm::dmvnorm(x, sigma = covar$Sigma, log = TRUE)
+gradient <- function(position) as.numeric(-(inverse_covar %*% as.numeric(position)))
+
+hmc_sample10 <- hamiltonianMC(rnorm(250), stepsize = 0.1, leapfrogsteps = 10, iterations = 2e3, is_log = TRUE)
+hmc_sample100 <- hamiltonianMC(rnorm(250), stepsize = 0.01, leapfrogsteps = 100, iterations = 2e3, is_log = TRUE)
+debugonce(naive_nouturn_sampler)
+naivenuts <- naive_nouturn_sampler(runif(250, -5, 5), stepsize = 2, iteration = 2e3, is_log = TRUE, covar = diag(covar$egvalues))
+effnuts_sample <- sample_noUturn(position_init = runif(250), iteration = 20, is_log = TRUE, covar = diag(covar$egvalues))
+debugonce(sample_noUturn)
 ```
+
+```{r, eval=longrun}
+idxmin <- which(covar$egvalues == min(covar$egvalues))
+idxmax <-  which(covar$egvalues == max(covar$egvalues))
+
+
+
+plot_l100_samples <- function(x, title) {
+  x <- x[, c(30, 209)]
+  
+  indep_samples <- as.data.frame(mvtnorm::rmvnorm(2e3, sigma = covar$Sigma))
+  dens <- apply(indep_samples, 1, posterior_density)
+  
+  ggplot(data = indep_samples, aes(x = V30, y = V209, z = dens)) +
+    stat_density2d(geom = "raster",
+  aes(fill = after_stat(density)),
+  contour = FALSE)+
+  scale_fill_viridis_c() +
+    geom_point(aes(x = x$X30, y = x$X209), alpha = 0.1) +
+    ggtitle(title)
+}
+
+hmc10_plot <- plot_l100_samples(hmc_sample10, "Hamiltonian Monte Calo, stepsize = 0.1")
+hmc100_plot <- plot_l100_samples(hmc_sample100, "Hamiltonian Monte Calo, stepsize = 0.01")
+
+naivenuts_plot <- plot_l100_samples(naivenuts, "Naive NUTS, stepsize = 0.01")
+effnuts_plot <- plot_l100_samples(effnuts_sample, "Naive NUTS, stepsize = 0.01")
+
+grid.arrange(hmc10_plot, hmc100_plot, naivenuts_plot, nrow = 1)
+```
+
 
 ```{r, echo =FALSE, eval=longrun}
 saveRDS(sample50norm, file = "files/sample50norm.rds")
@@ -71,7 +116,7 @@ gradient = partial_deriv_lin
 ```
 
 ```{r}
-linear <- sample_noUturn(c(4, 4, 4), iteration = 2e3, design = design, target = target, is_log = TRUE, seed = 123L, target_accpentance = .65, max_tree_depth = 12L)
+linear <- sample_noUturn(c(4, 4, 4), iteration = 5e3, design = design, target = target, is_log = TRUE, seed = 123L, target_accpentance = .65, max_tree_depth = 12L)
 ```
 Trace Plot for parameters
 
@@ -128,7 +173,7 @@ colnames(X) <- c("(Intercept)", "PI2", "EH2", "NV2")
 ```{r}
 devtools::load_all()
 posterior_density = bernoulli_pen
-gradient = partial_deriv_sigmoid
+gradient = partial_deriv_benoulli
 ```
 
 $$ \begin{aligned}
@@ -179,6 +224,35 @@ As our posterior is already logged we ca specify the `is_logged` argument as `TR
 
 We use a GAM with 2 position estimates indicating sinus of their true position here
 to consider spirals nonlinear structure.
+
+```{r, eval=longrun}
+hmc <- hamiltonianMC(runif(4, -5, 5), iterations = 5e3,stepsize = 0.1, leapfrogsteps = 10, design =  X, target = y)
+```
+
+```{r eval=longrun, echo=FALSE}
+saveRDS(object = hmc, file = "files/hmc.RDS")
+```
+
+```{r eval=!longrun, echo=FALSE}
+hmc <- readRDS("files/hmc.RDS")
+````
+
+```{r, echo=FALSE}
+calculate_traceplots <- function(var, varname, iter = 5e3){
+  ggplot(data = hmc, aes_string(x = seq_len(iter), y = var)) +
+    geom_line(color = "purple") + labs(x = "iteration", y = varname)
+  }
+
+args <- list(
+  list(var = "X1", varname = "intercept"), list(var = "X2", varname = "slope2"),
+  list(var = "X3", varname = "slope3"), list(var = "X4", varname = "slope4")
+  )
+
+traceplots <- lapply(args, function(x) do.call(calculate_traceplots, x))
+
+do.call(grid.arrange, c(traceplots, nrow = 2))
+```
+
 
 ```{r, eval=longrun}
 initial_pos <- lapply(1:5, function(x) runif(9, -5, 5))

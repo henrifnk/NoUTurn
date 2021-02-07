@@ -5,13 +5,13 @@
 #' @param leapfrogsteps interger; amount of leapfrogsteps
 #' @param iterations of HMC algorithm, should be long enough to draw samples from
 #'
-hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
-                          iterations) {
+hamiltonianMC <- function(position_init, stepsize, leapfrogsteps, iterations) {
+  pb <- txtProgressBar(min = 0, max = iterations, style = 3)
   ###### Preparation ############################################
   # initial position will be our starting value for the algorithm
   # positions will be a list containing all of our sampled positions
   position <- position_init
-  positions <- vector(mode = "list", length = iterations)
+  positions <- data.frame(matrix(ncol = length(position_init), nrow = iterations))
   ###### HMC Iteration ###########################################
   # For `iteration` steps we do:
   # we sample a momentum, combined with the position this will be
@@ -25,18 +25,20 @@ hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
     # drawn position & recalculate the next proposal by one more
     # leapfrogstep
     for(step in seq_len(leapfrogsteps)){
-      gradient <- gradient(proposal$position)
-      proposal <- do.call(leapfrog, c(proposal, stepsize, gradient))
+      proposal <- leapfrog(proposal$position, proposal$momentum, stepsize)
     }
   # Like in Metropolis-Hastings, we compare the (unnormalized) posterior
   # density at our proposal with the density at our previously drawn
   # position in the ratio of those two estimates, which will form the
   # acceptance probability of our drawn proposal
   # If excepted we add the proposal to our output positions variable
-    acceptance <- (joint_probability(proposal$position, proposal$momentum) /
-                     joint_probability(position, momentum))
+    acceptance <- exp(joint_log_density(proposal$position, proposal$momentum) -
+                     joint_log_density(position, momentum))
+    if(is.na(acceptance)) acceptance <- 1
     acceptance <- min(1, acceptance)
-    positions[[iter]] <- position <- if(runif(1) < acceptance) proposal$position else position
+    position <- if(runif(1) < acceptance) proposal$position else position
+    positions[iter, ] <- position
+    setTxtProgressBar(pb, iter)
   }
   return(positions)
 }

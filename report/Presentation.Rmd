@@ -1,7 +1,7 @@
 ---
 title: "An Introduction to the No U Turn Sampler and dual averaging"
 author: "Henri Funk"
-date: "3 12 2020"
+date: "18 12 2020"
 output:
   revealjs::revealjs_presentation:
     self_contained: false
@@ -22,7 +22,7 @@ vertical-center : true
 
 # {data-background=#262626}
 
-<h1 style="color: #fff">Metropolis(-Hastings) Algorithm</h1>
+<h1 style="color: #fff">Hamiltonian Monte Carlo</h1>
 
 <style>
 p.caption {
@@ -75,12 +75,12 @@ $J(\cdot)$ is only useful jumping distibution, if:
 * We don't reject/ accept jumps to often
  (see @gelman13)
 </div>
--->
+
 
 ## Random Walk Problem
 
 <center>
-```{r, echo=FALSE, out.width='50%'}
+```{r, echo=FALSE, out.width='75%'}
 knitr::include_graphics("files/HMC_multimodal.gif")
 ```
 </center>
@@ -92,117 +92,28 @@ knitr::include_graphics("files/HMC_multimodal.gif")
 
 > * Convergence speed depends on the Jumping distribution
 
+-->
 
-
-# {data-background=#262626}
-
-<h1 style="color: #fff">Hamiltonian Monte Carlo</h1>
-
-<center>
-```{r, echo=FALSE}
-knitr::include_graphics("files/HMC.png")
-```
-</center>
 
 ## Idea
 <br><br>
 
-> * Introduce a momentum $\phi_j$ for each component $\theta_j$
-> * update $\theta\ \& \ \phi$ simultaneously
-> * Let the jumping distribution $J(\cdot)$ be largely determined by $\phi$
+> * Introduce a momentum $r_t$ for each component $\theta_t$
+
+<br><br>
+
+> * update $\theta\ \& \ r$ simultaneously
+
+<br><br>
+
+> * Let the jumping distribution $J(\cdot)$ be largely determined by $r$
+
+<br><br><br>
 
 <div class="fragment">
 $\Rightarrow$ the resulting algorithm is somewhat a *hybrid* Monte Carlo with a
 mix of the known random walk and deterministic simulation methods derived from hamiltonian dynamics
 </div>
-
-<!---
-## HMC in 3 steps:
-
-> 1) update $\phi$, sampled from $\phi \sim \mathcal{N}(0, I)$    
-> 2) simultaneously updating of $(\theta,\phi)$ via leapfrog steps    
-> 3) acceptance/ rejection step analog to MH-Algorithm    
-
-<div class="fragment">
-
-### Ingredients
-
-* (un-normalized) log posterior density $log(p(\theta|y))$    
-</div>
-
-<div class="fragment">
-* gradient of $log_e(p(\theta|y))$: 
-$\frac{\partial log_e(p(\theta|y))}{\partial \theta}$  
-(Note: use analytic solutions here if possible, numerical might make the computational benefit vanish)
-</div>
-
-<div class="fragment">
-* the momentum distribution $p(\phi)$  
-$\Rightarrow$ usually $\phi \sim \mathcal{N_d}(0, I)$ where 0 denotes a zero vector of $\mathbb{R^d}$ and I denotes a $\mathbb{R^{dxd}}$ identity matrix
-</div>
-
-
-## Phylical analogy - Why use log?
-
-<center>
-```{r, echo=FALSE, out.width='50%'}
-knitr::include_graphics("files/log_gradient.png")
-```
-</center>
-@moore
-
-<div class="fragment">
-* Suppose HMC moves towards *low posterior density regions*:
-
-
-$$
-sgn\Big(\frac{dlog_e(p(\theta|y))}{d\theta}\Big) = -1 \ \Rightarrow \ \phi\ decreases
-$$
-</div>
-
-<div class="fragment">
-
-* Suppose HMC moves towards *a local posterior maximum*:
-
-$$
-\frac{dlog_e(p(\theta|y))}{d\theta} = 0 \ \Rightarrow \ p(\theta|y)\ slows \ by\ moving\ closer\ to\ local\ max
-$$
-</div>
-
-<div class="fragment">
-$\Rightarrow$ HMC works like a mode-finder
-</div>
-
-## Phylical analogy
-
-<center>
-```{r, echo=FALSE, out.width='75%'}
-knitr::include_graphics("files/halfpipe.gif")
-```
-</center>
-
-## Code - Parameter
-
-```{r, code=readLines("../R/Hamiltonian_MonteCarlo.R")[c(1:9, 42)]}
-```
-
-
-## Code - initilaize Values
-
-```{r, code=readLines("../R/Hamiltonian_MonteCarlo.R")[c(1:14, 42)]}
-```
-
-## Code - HMC iteration
-
-```{r, code=readLines("../R/Hamiltonian_MonteCarlo.R")[c(1:21, 40, 42)]}
-```
-
-## Code - Leapfrogsteps
-
-```{r, code=readLines("../R/Hamiltonian_MonteCarlo.R")[c(1:30, 40, 42)]}
-```
-
--->
 
 ## Code - HMC
 
@@ -215,6 +126,7 @@ Problem
 
 > * taking too few or too large steps $\Rightarrow \ \theta^t\ \& \ \theta^{t+1}$ end up very close. 
 
+<!---
 ## (Hand-)Tuning Parameters
 
 * $\epsilon = stepsize$
@@ -262,6 +174,7 @@ knitr::include_graphics("files/Questioning.gif")
   Set $\mathcal{L}  \downarrow, \epsilon \uparrow$.
 (see @gelman13)
 </div>
+--->
 
 ## Desirable behavoir for tuning parameters tuning parameters HMC:
 
@@ -289,11 +202,11 @@ $\Rightarrow$ All three approaches may be combined. In the following we will dis
 
 # {data-background=#262626}
 
-<h1 style="color: #fff" class="r-fit-text">The (naive) No-U-Turn Sampler</h1>
+<h1 style="color: #fff">The (naive) No-U-Turn Sampler</h1>
 
 <center>
 ```{r, echo=FALSE}
-knitr::include_graphics("files/nNUTS.png")
+knitr::include_graphics("files/HMC.png")
 ```
 </center>
 
@@ -320,9 +233,10 @@ NOTES:
   a) $\mathcal{L_t}$ to small
   b) $\mathcal{L_t}$ to high
 </div>
-
+<br>
 <div class="fragment">
 * The $\mathcal{L_t}$-Leapfrog steps performed from starting state $(\theta_{right}, r_{right})$ in phase-space to their end  $(\theta_{left}, r_{left})$ after $\mathcal{L_t}$ Leapfrogsteps might look as follows:
+<br>
 </div>
 
 ```{r, echo=FALSE}
@@ -334,26 +248,14 @@ lable1 <- "Left Plot: Expanding the trajectory in either direction typically ext
 ```{r, echo=FALSE, fig.cap=lable1, out.width="50%"}
 knitr::include_graphics("files/U-Turn-Criteria.png")
 ```
+
+Criterion
+$$
+r_{right} (\theta_{left} - \theta_{right}) < 0
+$$
 </center>
 </div>
 </small>
-
-## Criterion
-
-$\Rightarrow$ explore the energy level stepwise @betancourt2017
-
-$$
-r_{left} (\theta_{right} - \theta_{left}) < 0\\
-r_{right} (\theta_{left} - \theta_{right}) < 0
-$$
-
-<div class="fragment">
-*Derivation:* this is basically a euclidean derivative w.r.t. time t of half the squared distance between two positions: $\frac{d(\theta_1 - \theta_2)^T(\theta_1 - \theta_2)}{dt}$.
-
-*Intuition:* this is the dot product of the two vectors from the picture.
-If the dot product gets higher than 0, the trajectory will make a *u-turn*.
-This is when we "traveled maximally" in phase space an so where we want to stop exploring the enery set.
-</div>
 
 ## Naive Stepwise Exploration Scheme
 
@@ -389,9 +291,7 @@ lable2 <- "Typical doubling proccedure. The initial point is black. Each colour 
 ```
 
 <center>
-```{r, echo=FALSE, fig.cap=lable2, out.width="75%"}
-knitr::include_graphics("files/Doubling.png")
-```
+
 @hoffman2014  
 </center>
 
@@ -530,11 +430,11 @@ knitr::include_graphics("files/recursion.svg")
 
 # {data-background=#262626}
 
-<h1 style="color: #fff" class="r-fit-text">No-U-Turn Sampler with dual averaging</h1>
+<h1 style="color: #fff" class="r-fit-text">The efficient No-U-Turn Sampler</h1>
 
 <center>
 ```{r, echo=FALSE}
-knitr::include_graphics("files/NUTS.png")
+knitr::include_graphics("files/nNUTS.png")
 ```
 </center>
 
@@ -565,9 +465,9 @@ knitr::include_graphics("files/trajectory.png")
 
 ## Efficient NUTS - a solution
 
+<br><br>
 Idea:
-
-* Implement a transition kernel that produces larger jumps than uniform sampling while keeping $\mathcal{C}$ balanced.
+<br>
 
 * Therefore sample from $\mathcal{C}$ incrementally by its subtrees
 
@@ -575,21 +475,73 @@ Idea:
 
 <div class="fragment">
 For each subtree $\mathcal{B_{st}}$ in $\mathcal{B}$:
+</div>
 
 > * sample a valid state $(\theta, r) \in \mathcal{C_{st}}$ as representee
 
 > * choose a pair by giving them a weight proportional to their subtrees element size
 
+<div class="fragment">
+**this method... **
 </div>
 
-<div class="fragment">
-* $\Rightarrow$ this method stores only $\mathcal{O}(j)$ position momentum vectors and
 
-* is sparse at calculating the gradient as build tree can be canceled early if U-turn was made
+<div class="fragment">
+$\Rightarrow$  stores only $\mathcal{O}(j)$ position momentum vectors and
+
+$\Rightarrow$ is sparse at calculating the gradient as build tree can be canceled early if U-turn was made
+</div>
+
+## Differences to naive NUTS
+
+<center>
+```{r, echo=FALSE, warning=FALSE}
+library(kableExtra)
+tbl_img <- data.frame(
+  name = c("Dif NUTS", "Dif build_tree", "Dif build leaf"),
+  logo = ""
+)
+
+tbl_img %>%
+  kbl(booktabs = T) %>%
+  kable_paper(full_width = T) %>%
+  column_spec(2, image = c(
+    c("files/git_Dif_NUTS.png", "files/git_Dif_build_Tree.png", "files/git_Dif_leaf.png"), 50, 50))%>%
+  scroll_box(height = "600px")
+```
+</center>
+
+# {data-background=#262626}
+
+<h1 style="color: #fff" class="r-fit-text">No-U-Turn Sampler with dual averaging</h1>
+
+<center>
+```{r, echo=FALSE}
+knitr::include_graphics("files/NUTS.png")
+```
+</center>
+
+## Intuition 
+<br>
+
+> * Acceptance probability for this, would be one if we could exactly run the hamiltonian dynamics as it drives us towards lower density regions.
+
+<div class="fragment">
+$\Rightarrow$ Essentially, this acceptance probability is related to how good the numerical approximation of Leapfrogsteps to the Hamiltonian dynamics is. 
+</div>
+
+> * Then, we balance the tradeoff between the error and the time it takes to generate any given sample by varying $\delta$ either spend more time generating better approximations of the Hamiltonian-dynamics, or alternately spend less time generating crappier ones knowing that we will throw more away.
+
+<div class="fragment">
+<center>
+```{r echo=FALSE, out.width="75%"}
+knitr::include_graphics("files/Leapfrog_Discretization.png")
+```
+<center>
 </div>
 
 ## Adaptively tuning the stepsize
-
+<br>
 <div class="fragment">
 Idea: 
 Find a **stepsize** $\epsilon$ in a Warm-Up Phase that guarantees quick convergence
@@ -616,22 +568,6 @@ $\epsilon_{t+1} =\epsilon_t - \eta_tH_t, \ \eta_t \in (0,1]$
 If acceptance $\alpha_t$ was to high we encourage the algorithm for larger jumps, rising $\epsilon_{t+1}$
 
 If acceptance $\alpha_t$ was to low we encourage the algorithm for smaller jumps, decreasing $\epsilon_{t+1}$
-</div>
-
-## Intuition 
-
-> * Acceptance probability for this, would be one if we could exactly run the hamiltonian dynamics as it drives us towards lower density regions.
-
-> * $\Rightarrow$ Essentially, this acceptance probability is related to how good the numerical approximation of Leapfrogsteps to the Hamiltonian dynamics is. 
-
-> * Then, we balance the tradeoff between the error and the time it takes to generate any given sample by varying $\delta$ either spend more time generating better approximations of the Hamiltonian-dynamics, or alternately spend less time generating crappier ones knowing that we will throw more away.
-
-<div class="fragment">
-<center>
-```{r echo=FALSE, out.width="75%"}
-knitr::include_graphics("files/Leapfrog_Discretization.png")
-```
-<center>
 </div>
 
 ## Dual Averaging
@@ -708,12 +644,6 @@ Integration in `build_leaf`:
 ```
 </div>
 
-## Intuition behind automatising the step size:
-
-With that said, the idea is that the slice sampler is there because we can't solve the dynamical system exactly, but with a discrete system. Because it's going to have an error, we use the slice sampler to compensate for bias that might exist if we just accepted the numerical Hamiltonian dynamics as if they were exact.
-
-
-
 ## Implement efficient NUTS with dual averaging
 
 ```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Efficient_NUTS.R")}
@@ -724,6 +654,40 @@ With that said, the idea is that the slice sampler is there because we can't sol
 ```{r, warning=FALSE, code=readLines("../R/Showcase_Functions/Simplified_Double_Efficient.R")}
 ```
 
+## Summarize NUTS
+
+The sampling procedure is summarized as follows:
+<br><br>
+<div class="fragment">
+1) Set the initial value of $theta$, $\epsilon$ and values of $\delta$ $t_0$, $\mu$, $\gamma$ $-\kappa$
+</div>
+<br>
+<div class="fragment">
+2) Generate momentum $r_0$ from the standard normal distribution r∼N(0,I).
+</div>
+<br>
+<div class="fragment">
+3) Generate slice variable u from the uniform distribution $s∼Uniform(0,exp(logf(\theta)−\frac{1}{2}r^Tr))$.
+</div>
+<br>
+<div class="fragment">
+4) Generate valid states $\mathcal{C}$ by using the doubling method and sample a proposal  $(\hat{\theta},\hat{r})$ iteratively
+</div>
+<br>
+<div class="fragment">
+5) Accept the proposal $(\hat{\theta},\hat{r})$ with probability proportional to the valid_set size.
+</div>
+<br>
+<div class="fragment">
+6) Update $\epsilon^t$ by dual averaging.
+</div>
+<br>
+<div class="fragment">
+7) Repeat steps 2 to 6, step 6 is repeated only during the warm-up phase.
+<br>
+see @nishio 
+</div>
+
 # Examples
 
 <center>
@@ -732,51 +696,18 @@ knitr::include_graphics("files/DancingPeaks.gif")
 ```
 </center>
 
-## Sample from $\mathcal{N_{50}}(0, I)$
 
-```{r, include=FALSE, warning=FALSE, message=FALSE}
-rm(list = c("acceptance_rate", "build_leaf", "find_initial_stepsize", "hamiltonianMC", "sample_noUturn"))
+## Regression - an artificial data set
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 longrun = FALSE
 
 devtools::load_all()
+library(mlbench)
 library(ggplot2)
 library(gridExtra)
 ```
-
-The call:
-
-```{r, eval=longrun}
-posterior_density = mvtnorm::dmvnorm
-gradient <- function(position){-position}
-sample50norm <- sample_noUturn(position_init = runif(50, -5, -2), iteration = 2e3, is_log = FALSE)
-```
-
-```{r, echo=FALSE, eval=longrun}
-saveRDS(sample50norm, file = "files/sample50norm.rds")
-```
-
-```{r, echo=FALSE, eval =!longrun}
-sample50norm <- readRDS("files/sample50norm.rds")
-```
-
-<div class="fragment">
-Trace the algorithm:
-
-```{r echo=FALSE, fig.height=3}
-a <- ggplot(data = sample50norm, aes(x = seq_len(2000), y = X10)) +
-  geom_line(colour = "blue")
-b <- ggplot(data = sample50norm[-seq_len(1e3), ], aes(x = X10)) +
-  geom_density(colour = "blue")
-c <- ggplot(data = sample50norm, aes(x = seq_len(2000), y = X40)) +
-  geom_line(colour = "green")
-d <- ggplot(data = sample50norm[-seq_len(1e3), ], aes(x = X40)) +
-  geom_density(colour = "green")
-grid.arrange(a, b, c, d, nrow = 1)
-```
-
-</div>
-
-## Regression - an artificial data set
 
 Generate data: 
 
@@ -786,68 +717,89 @@ perfect_position <- c(1,2,3)
 target <- design %*% perfect_position + rnorm(400)
 ```
 
+<div class="fragment">
 Take a look at the data:
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="50%"}
 ggplot(as.data.frame(design[,-1]), aes(x =V1, y = V2, colour=target)) +
   geom_point() +
   scale_colour_gradient2()
 ```
 
-## Regression - Comparison
-
-```{r}
-lm(target~., data = as.data.frame(design[,-1]))
-```
+</div>
 
 ## Regression - Set Up NUTS
 
+<div class="fragment">
 ```{r}
 posterior_density = log_linear
 gradient = partial_deriv_lin
 ```
-
+</div>
+<div class="fragment">
 ```{r, eval=longrun}
-linear <- sample_noUturn(c(4, 4, 4), iteration = 2e3, design = design, target = target,
-                         is_log = TRUE, seed = 123L, target_accpentance = .65, max_tree_depth = 12L)
+linear39 <- sample_noUturn(c(4, 4, 4), iteration = 2e3, design = design, target = target,
+                         is_log = TRUE, seed = 123L, target_accpentance = .39, max_tree_depth = 12L)
 ```
-
 ```{r eval=longrun, echo=FALSE}
-saveRDS(object = linear, file = "files/linear.RDS")
+saveRDS(object = linear39, file = "files/linear39.RDS")
 ```
-
+</div>
+<div class="fragment">
 ```{r eval=!longrun, echo=FALSE}
-linear <- readRDS("files/linear.RDS")
+linear39 <- readRDS("files/linear39.RDS")
 ```
+</div>
+
+<div class="fragment">
+```{r}
+lm(target~., data = as.data.frame(design[,-1]))
+```
+</div>
 
 ## Regression - Trace Plot for parameters
 
 ```{r, echo=FALSE}
-calculate_traceplots <- function(var, varname, iter = 2e3){
-  ggplot(data = linear, aes_string(x = seq_len(iter), y = var)) +
-    geom_line(color = "red") + labs(x = "iteration", y = varname) +
-    annotate("rect", xmin = 0, xmax = 1e3, ymin = 4, ymax = -1, alpha = .2)
+calculate_traceplots <- function(data, var, varname, iter = 2e3){
+  ggplot(data = data, aes_string(x = seq_len(iter), y = var)) +
+    geom_line(color = "purple") + labs(x = "iteration", y = varname) +
+    annotate("rect", xmin = 0, xmax = 1e3, ymin = 6, ymax = -1, alpha = .2)
 }
 
-args <- list(
-  list(var = "X1", varname = "intercept"), list(var = "X2", varname = "slope2"),
-  list(var = "X3", varname = "slope3"))
+args39 <- list(
+  list(linear39, var = "X1", varname = "intercept"), list(linear39, var = "X2", varname = "slope2"),
+  list(linear39, var = "X3", varname = "slope3"))
 
-traceplots <- lapply(args, function(x) do.call(calculate_traceplots, x))
+traceplots <- lapply(args39, function(x) do.call(calculate_traceplots, x))
 
-do.call(grid.arrange, c(traceplots, nrow = 2))
+
+do.call(grid.arrange, c(traceplots, nrow = 1))
 ```
 
+## Regression - Autocorrelation 
+
+```{r, echo=FALSE}
+acf(linear39, lag.max = 2e3, col= "purple")
+```
+
+
+
 ## Classification - Endometrial data Set
+<br>
+<br>
+<br>
+<br>
 
 * **Goal:** Predict whether a person has endometrial cancer or not.
 
+<br>
 <div class="fragment">
+
 **Dataset:** 
->A data frame with 79 rows and 4 variables:
-NV Neovasculation risk factor indicator (0=Absent, 1=Present)  
-PI Pulsatility index of arteria uterina  
-EH Endometrium height  
+A data frame with 79 rows and 4 variables: <br>
+NV Neovasculation risk factor indicator (0=Absent, 1=Present)  <br>
+PI Pulsatility index of arteria uterina <br>
+EH Endometrium height  <br>
 
 </div>
 
@@ -855,7 +807,7 @@ EH Endometrium height
 * We standardize the data to get an estimates independent from their scale.
 </div>
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(hmclearn)
 data(Endometrial)
 
@@ -929,6 +881,7 @@ $$
 \nabla_{\boldsymbol\beta} \log f(\boldsymbol\beta, \mathbf{X}, \mathbf{y}, \sigma^2) &\propto \mathbf{X}^T \left ( \mathbf{y} - \mathbf{1}n+ \frac{e^{-\mathbf{X}\boldsymbol\beta}}{1 + e^{-\mathbf{X}\boldsymbol\beta}}\right) - \boldsymbol\beta / \sigma^2 
 \end{aligned}
 $$
+@thomas
 </div>
 </small>
 <div class="fragment">
@@ -936,11 +889,44 @@ Finally simply initialize the functions:
 
 ```{r}
 posterior_density = bernoulli_pen
-gradient = partial_deriv_sigmoid
+gradient = partial_deriv_benoulli
 ```
 </div>
 
+## Classification - Run HMC
+
+```{r, eval=longrun}
+hmc <- hamiltonianMC(runif(4, -5, 5), iterations = 5e3,stepsize = 0.1, leapfrogsteps = 10, design =  X, target = y)
+```
+
+```{r eval=longrun, echo=FALSE}
+saveRDS(object = hmc, file = "files/hmc.RDS")
+```
+
+```{r eval=!longrun, echo=FALSE}
+hmc <- readRDS("files/hmc.RDS")
+````
+
+```{r, echo=FALSE}
+calculate_traceplots <- function(var, varname, iter = 5e3){
+  ggplot(data = hmc, aes_string(x = seq_len(iter), y = var)) +
+    geom_line(color = "purple") + labs(x = "iteration", y = varname)
+  }
+
+args <- list(
+  list(var = "X1", varname = "intercept"), list(var = "X2", varname = "slope2"),
+  list(var = "X3", varname = "slope3"), list(var = "X4", varname = "slope4")
+  )
+
+traceplots <- lapply(args, function(x) do.call(calculate_traceplots, x))
+
+do.call(grid.arrange, c(traceplots, nrow = 2))
+```
+
+
 ## Classification - Run NUTS
+
+<br><br><br>
 
 Run `sample_noUturn` for 5000 iterations with a small target acceptance of `0.39`
 As our posterior is already logged we ca specify the `is_logged` argument as `TRUE`
@@ -965,11 +951,11 @@ param_sample_binary <- readRDS("files/param_sample_binary.RDS")
 ```
 </div>
 
-This took 24 hours of calculation, plus preparation.
+> * This took 24 hours of calculation, plus preparation.
 
 ## Trace the run
 
-```{r}
+```{r, echo=FALSE, out.width="50%"}
 attrib <- lapply(param_sample_binary, attributes)
 stepsize <-as.data.frame(sapply(attrib, function(x) log(x$dual_averaging$stepsize)))
 ggplot(stepsize, aes(x = seq_len(2501), y = V1)) +
@@ -978,11 +964,12 @@ ggplot(stepsize, aes(x = seq_len(2501), y = V1)) +
   
 ```
 
-Sationary epsilon after adaptive Warm Up:
+Sationary log-epsilon after adaptive Warm Up:
 
 ```{r, echo=FALSE}
 attrib <- lapply(param_sample_binary, attributes)
 stat_eps <- sapply(attrib, function(x) x$dual_averaging$stepsize_weight[2501])
+log(stat_eps[1:2])
 ```
 
 
@@ -1033,25 +1020,30 @@ do.call(grid.arrange, c(density, nrow = 2))
 
 ## Classification - Prediction and Comparison
 
+<br>
+<br>
 <div class="fragment">
 Lets compare our models mean parameter Estimators to those of a GLM
 
 ```{r}
 f <- glmnet::glmnet(X, y, family = "binomial", lambda = 1/200)
-mean_estimate <- lapply(param_distrib, colMeans)
 ```
-</div>
-<div class="fragment">
 
 ```{r, echo=FALSE}
-reg_glm <- rbind(t(sapply(param_distrib, colMeans))[-5,], c(f$a0, f$beta@x))
-reg_glm <- round(as.data.frame(reg_glm, row.names =  c("Sample1", "Sample2", "Sample3", "Sample4", "regularized GLM")), 2)
-knitr::kable(reg_glm, col.names = c("intercept", "slope1", "slope2", "slope3"),
-             caption =  "parameter Estimates averaged for last 1000 iterations vs penalized GLM")
+mean_estimate <- lapply(param_distrib, colMeans)
 ```
 
 </div>
+<br>
+<br>
 <div class="fragment">
+
+
+
+</div>
+<!---
+<div class="fragment">
+
 
 In the following we can see the average deviation of one prediction from the true value is about 20% uncertainty:
 
@@ -1065,7 +1057,7 @@ sapply(calc, function(x){
 })[1:4]
 ```
 </div>
-<!---
+
 ## Regression - Data Set
 
 **Data Set Information:**

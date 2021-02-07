@@ -510,6 +510,8 @@ document.getElementsByTagName('head')[0].appendChild(style);
 
     <link href="Presentation_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
     <link href="Presentation_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+    <script src="Presentation_files/kePrint-0.0.1/kePrint.js"></script>
+    <link href="Presentation_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
 </head>
 <body>
   <div class="reveal">
@@ -518,11 +520,11 @@ document.getElementsByTagName('head')[0].appendChild(style);
 <section>
     <h1 class="title">An Introduction to the No U Turn Sampler and dual averaging</h1>
     <h2 class="author">Henri Funk</h2>
-    <h3 class="date">3 12 2020</h3>
+    <h3 class="date">18 12 2020</h3>
 </section>
 
 <section><section id="section" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff">
-Metropolis(-Hastings) Algorithm
+Hamiltonian Monte Carlo
 </h1>
 <style>
 p.caption {
@@ -566,202 +568,39 @@ $J(\cdot)$ is only useful jumping distibution, if:
 * We don't reject/ accept jumps to often
  (see @gelman13)
 </div>
---></section><section id="random-walk-problem" class="slide level2">
-<h2>Random Walk Problem</h2>
+
+
+## Random Walk Problem
+
 <center>
-<img src="files/HMC_multimodal.gif" width="50%" />
+<img src="files/HMC_multimodal.gif" width="75%" />
 </center>
-<p><span class="citation" data-cites="feng20">Feng (2016)</span></p>
-<ul>
-<li class="fragment">Gibbs and MH spend a lot of time zigging and zagging in the target distribution</li>
-</ul>
-<ul>
-<li class="fragment">Convergence speed depends on the Jumping distribution</li>
-</ul>
-</section></section>
-<section><section id="section-1" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff">
-Hamiltonian Monte Carlo
-</h1>
-<center>
-<img src="files/HMC.png" width="876" />
-</center></section><section id="idea" class="slide level2">
+
+
+@feng20
+
+> * Gibbs and MH spend a lot of time zigging and zagging in the target distribution
+
+> * Convergence speed depends on the Jumping distribution
+
+--></section><section id="idea" class="slide level2">
 <h2>Idea</h2>
 <p><br><br></p>
 <ul>
-<li class="fragment">Introduce a momentum <span class="math inline">\(\phi_j\)</span> for each component <span class="math inline">\(\theta_j\)</span></li>
-<li class="fragment">update <span class="math inline">\(\theta\ \&amp; \ \phi\)</span> simultaneously</li>
-<li class="fragment">Let the jumping distribution <span class="math inline">\(J(\cdot)\)</span> be largely determined by <span class="math inline">\(\phi\)</span></li>
+<li class="fragment">Introduce a momentum <span class="math inline">\(r_t\)</span> for each component <span class="math inline">\(\theta_t\)</span></li>
 </ul>
+<p><br><br></p>
+<ul>
+<li class="fragment">update <span class="math inline">\(\theta\ \&amp; \ r\)</span> simultaneously</li>
+</ul>
+<p><br><br></p>
+<ul>
+<li class="fragment">Let the jumping distribution <span class="math inline">\(J(\cdot)\)</span> be largely determined by <span class="math inline">\(r\)</span></li>
+</ul>
+<p><br><br><br></p>
 <div class="fragment">
 <p><span class="math inline">\(\Rightarrow\)</span> the resulting algorithm is somewhat a <em>hybrid</em> Monte Carlo with a mix of the known random walk and deterministic simulation methods derived from hamiltonian dynamics</p>
 </div>
-<!---
-## HMC in 3 steps:
-
-> 1) update $\phi$, sampled from $\phi \sim \mathcal{N}(0, I)$    
-> 2) simultaneously updating of $(\theta,\phi)$ via leapfrog steps    
-> 3) acceptance/ rejection step analog to MH-Algorithm    
-
-<div class="fragment">
-
-### Ingredients
-
-* (un-normalized) log posterior density $log(p(\theta|y))$    
-</div>
-
-<div class="fragment">
-* gradient of $log_e(p(\theta|y))$: 
-$\frac{\partial log_e(p(\theta|y))}{\partial \theta}$  
-(Note: use analytic solutions here if possible, numerical might make the computational benefit vanish)
-</div>
-
-<div class="fragment">
-* the momentum distribution $p(\phi)$  
-$\Rightarrow$ usually $\phi \sim \mathcal{N_d}(0, I)$ where 0 denotes a zero vector of $\mathbb{R^d}$ and I denotes a $\mathbb{R^{dxd}}$ identity matrix
-</div>
-
-
-## Phylical analogy - Why use log?
-
-<center>
-<img src="files/log_gradient.png" width="50%" />
-</center>
-@moore
-
-<div class="fragment">
-* Suppose HMC moves towards *low posterior density regions*:
-
-
-$$
-sgn\Big(\frac{dlog_e(p(\theta|y))}{d\theta}\Big) = -1 \ \Rightarrow \ \phi\ decreases
-$$
-</div>
-
-<div class="fragment">
-
-* Suppose HMC moves towards *a local posterior maximum*:
-
-$$
-\frac{dlog_e(p(\theta|y))}{d\theta} = 0 \ \Rightarrow \ p(\theta|y)\ slows \ by\ moving\ closer\ to\ local\ max
-$$
-</div>
-
-<div class="fragment">
-$\Rightarrow$ HMC works like a mode-finder
-</div>
-
-## Phylical analogy
-
-<center>
-<img src="files/halfpipe.gif" width="75%" />
-</center>
-
-## Code - Parameter
-
-
-```r
-#' Hamiltonian (hybrid) Monte Carlo
-#'
-#' @param position_init initial sample
-#' @param stepsize length of Leapfrog stepsize
-#' @param leapfrogsteps interger; amount of leapfrogsteps
-#' @param iterations of HMC algorithm, should be long enough to draw samples from
-#'
-hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
-                          iterations) {
-}
-```
-
-
-## Code - initilaize Values
-
-
-```r
-#' Hamiltonian (hybrid) Monte Carlo
-#'
-#' @param position_init initial sample
-#' @param stepsize length of Leapfrog stepsize
-#' @param leapfrogsteps interger; amount of leapfrogsteps
-#' @param iterations of HMC algorithm, should be long enough to draw samples from
-#'
-hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
-                          iterations) {
-  ###### Preparation ############################################
-  # initial position will be our starting value for the algorithm
-  # positions will be a list containing all of our sampled positions
-  position <- position_init
-  positions <- vector(mode = "list", length = iterations)
-}
-```
-
-## Code - HMC iteration
-
-
-```r
-#' Hamiltonian (hybrid) Monte Carlo
-#'
-#' @param position_init initial sample
-#' @param stepsize length of Leapfrog stepsize
-#' @param leapfrogsteps interger; amount of leapfrogsteps
-#' @param iterations of HMC algorithm, should be long enough to draw samples from
-#'
-hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
-                          iterations) {
-  ###### Preparation ############################################
-  # initial position will be our starting value for the algorithm
-  # positions will be a list containing all of our sampled positions
-  position <- position_init
-  positions <- vector(mode = "list", length = iterations)
-  ###### HMC Iteration ###########################################
-  # For `iteration` steps we do:
-  # we sample a momentum, combined with the position this will be
-  # our proposal for Leapfrog Steps
-  for(iter in seq_len(iterations)) {
-    momentum <- rnorm(length(position_init))
-    proposal <- list("position" = position, "momentum" = momentum)
-  }
-}
-```
-
-## Code - Leapfrogsteps
-
-
-```r
-#' Hamiltonian (hybrid) Monte Carlo
-#'
-#' @param position_init initial sample
-#' @param stepsize length of Leapfrog stepsize
-#' @param leapfrogsteps interger; amount of leapfrogsteps
-#' @param iterations of HMC algorithm, should be long enough to draw samples from
-#'
-hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
-                          iterations) {
-  ###### Preparation ############################################
-  # initial position will be our starting value for the algorithm
-  # positions will be a list containing all of our sampled positions
-  position <- position_init
-  positions <- vector(mode = "list", length = iterations)
-  ###### HMC Iteration ###########################################
-  # For `iteration` steps we do:
-  # we sample a momentum, combined with the position this will be
-  # our proposal for Leapfrog Steps
-  for(iter in seq_len(iterations)) {
-    momentum <- rnorm(length(position_init))
-    proposal <- list("position" = position, "momentum" = momentum)
-    ###### Leapfrog Iteration #####################################
-    # For `leapfrogsteps` steps we do:
-    # We calculate the partial gradient of our log-posterior at the
-    # drawn position & recalculate the next proposal by one more
-    # leapfrogstep
-    for(step in seq_len(leapfrogsteps)){
-      gradient <- gradient(proposal$position)
-      proposal <- do.call(leapfrog, c(proposal, stepsize, gradient))
-    }
-  }
-}
-```
-
--->
 </section><section id="code---hmc" class="slide level2">
 <h2>Code - HMC</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co">#&#39; Hamiltonian (hybrid) Monte Carlo</span></span>
@@ -772,83 +611,100 @@ hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
 <span id="cb1-6"><a href="#cb1-6"></a><span class="co">#&#39; @param iterations of HMC algorithm, should be long enough to draw samples from</span></span>
 <span id="cb1-7"><a href="#cb1-7"></a><span class="co">#&#39;</span></span>
 <span id="cb1-8"><a href="#cb1-8"></a>hamiltonianMC &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, leapfrogsteps,</span>
-<span id="cb1-9"><a href="#cb1-9"></a>                          iterations) {</span>
-<span id="cb1-10"><a href="#cb1-10"></a>  <span class="co">###### Preparation ############################################</span></span>
-<span id="cb1-11"><a href="#cb1-11"></a>  <span class="co"># initial position will be our starting value for the algorithm</span></span>
-<span id="cb1-12"><a href="#cb1-12"></a>  <span class="co"># positions will be a list containing all of our sampled positions</span></span>
-<span id="cb1-13"><a href="#cb1-13"></a>  position &lt;-<span class="st"> </span>position_init</span>
-<span id="cb1-14"><a href="#cb1-14"></a>  positions &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">mode =</span> <span class="st">&quot;list&quot;</span>, <span class="dt">length =</span> iterations)</span>
-<span id="cb1-15"><a href="#cb1-15"></a>  <span class="co">###### HMC Iteration ###########################################</span></span>
-<span id="cb1-16"><a href="#cb1-16"></a>  <span class="co"># For `iteration` steps we do:</span></span>
-<span id="cb1-17"><a href="#cb1-17"></a>  <span class="co"># we sample a momentum, combined with the position this will be</span></span>
-<span id="cb1-18"><a href="#cb1-18"></a>  <span class="co"># our proposal for Leapfrog Steps</span></span>
-<span id="cb1-19"><a href="#cb1-19"></a>  <span class="cf">for</span>(iter <span class="cf">in</span> <span class="kw">seq_len</span>(iterations)) {</span>
-<span id="cb1-20"><a href="#cb1-20"></a>    momentum &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">length</span>(position_init))</span>
-<span id="cb1-21"><a href="#cb1-21"></a>    proposal &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;position&quot;</span> =<span class="st"> </span>position, <span class="st">&quot;momentum&quot;</span> =<span class="st"> </span>momentum)</span>
-<span id="cb1-22"><a href="#cb1-22"></a>    <span class="co">###### Leapfrog Iteration #####################################</span></span>
-<span id="cb1-23"><a href="#cb1-23"></a>    <span class="co"># For `leapfrogsteps` steps we do:</span></span>
-<span id="cb1-24"><a href="#cb1-24"></a>    <span class="co"># We calculate the partial gradient of our log-posterior at the</span></span>
-<span id="cb1-25"><a href="#cb1-25"></a>    <span class="co"># drawn position &amp; recalculate the next proposal by one more</span></span>
-<span id="cb1-26"><a href="#cb1-26"></a>    <span class="co"># leapfrogstep</span></span>
-<span id="cb1-27"><a href="#cb1-27"></a>    <span class="cf">for</span>(step <span class="cf">in</span> <span class="kw">seq_len</span>(leapfrogsteps)){</span>
-<span id="cb1-28"><a href="#cb1-28"></a>      gradient &lt;-<span class="st"> </span><span class="kw">gradient</span>(proposal<span class="op">$</span>position)</span>
-<span id="cb1-29"><a href="#cb1-29"></a>      proposal &lt;-<span class="st"> </span><span class="kw">do.call</span>(leapfrog, <span class="kw">c</span>(proposal, stepsize, gradient))</span>
-<span id="cb1-30"><a href="#cb1-30"></a>    }</span>
-<span id="cb1-31"><a href="#cb1-31"></a>  <span class="co"># Like in Metropolis-Hastings, we compare the (unnormalized) posterior</span></span>
-<span id="cb1-32"><a href="#cb1-32"></a>  <span class="co"># density at our proposal with the density at our previously drawn</span></span>
-<span id="cb1-33"><a href="#cb1-33"></a>  <span class="co"># position in the ratio of those two estimates, which will form the</span></span>
-<span id="cb1-34"><a href="#cb1-34"></a>  <span class="co"># acceptance probability of our drawn proposal</span></span>
-<span id="cb1-35"><a href="#cb1-35"></a>  <span class="co"># If excepted we add the proposal to our output positions variable</span></span>
-<span id="cb1-36"><a href="#cb1-36"></a>    acceptance &lt;-<span class="st"> </span>(<span class="kw">joint_probability</span>(proposal<span class="op">$</span>position, proposal<span class="op">$</span>momentum) <span class="op">/</span></span>
-<span id="cb1-37"><a href="#cb1-37"></a><span class="st">                     </span><span class="kw">joint_probability</span>(position, momentum))</span>
-<span id="cb1-38"><a href="#cb1-38"></a>    acceptance &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="dv">1</span>, acceptance)</span>
-<span id="cb1-39"><a href="#cb1-39"></a>    positions[[iter]] &lt;-<span class="st"> </span>position &lt;-<span class="st"> </span><span class="cf">if</span>(<span class="kw">runif</span>(<span class="dv">1</span>) <span class="op">&lt;</span><span class="st"> </span>acceptance) proposal<span class="op">$</span>position <span class="cf">else</span> position</span>
-<span id="cb1-40"><a href="#cb1-40"></a>  }</span>
-<span id="cb1-41"><a href="#cb1-41"></a>  <span class="kw">return</span>(positions)</span>
-<span id="cb1-42"><a href="#cb1-42"></a>}</span></code></pre></div>
-</section><section id="section-2" class="slide level2" data-background="files/HMC_problem.gif">
+<span id="cb1-9"><a href="#cb1-9"></a>                          iterations, design, target,</span>
+<span id="cb1-10"><a href="#cb1-10"></a>                          <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
+<span id="cb1-11"><a href="#cb1-11"></a>  pb &lt;-<span class="st"> </span><span class="kw">txtProgressBar</span>(<span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> iterations, <span class="dt">style =</span> <span class="dv">3</span>)</span>
+<span id="cb1-12"><a href="#cb1-12"></a>  <span class="co">###### Preparation ############################################</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>  <span class="co"># initial position will be our starting value for the algorithm</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a>  <span class="co"># positions will be a list containing all of our sampled positions</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a>  position &lt;-<span class="st"> </span>position_init</span>
+<span id="cb1-16"><a href="#cb1-16"></a>  positions &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">matrix</span>(<span class="dt">ncol =</span> <span class="kw">length</span>(position_init), <span class="dt">nrow =</span> iterations))</span>
+<span id="cb1-17"><a href="#cb1-17"></a>  <span class="co">###### HMC Iteration ###########################################</span></span>
+<span id="cb1-18"><a href="#cb1-18"></a>  <span class="co"># For `iteration` steps we do:</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>  <span class="co"># we sample a momentum, combined with the position this will be</span></span>
+<span id="cb1-20"><a href="#cb1-20"></a>  <span class="co"># our proposal for Leapfrog Steps</span></span>
+<span id="cb1-21"><a href="#cb1-21"></a>  <span class="cf">for</span>(iter <span class="cf">in</span> <span class="kw">seq_len</span>(iterations)) {</span>
+<span id="cb1-22"><a href="#cb1-22"></a>    momentum &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="kw">length</span>(position_init))</span>
+<span id="cb1-23"><a href="#cb1-23"></a>    proposal &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;position&quot;</span> =<span class="st"> </span>position, <span class="st">&quot;momentum&quot;</span> =<span class="st"> </span>momentum)</span>
+<span id="cb1-24"><a href="#cb1-24"></a>    <span class="co">###### Leapfrog Iteration #####################################</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a>    <span class="co"># For `leapfrogsteps` steps we do:</span></span>
+<span id="cb1-26"><a href="#cb1-26"></a>    <span class="co"># We calculate the partial gradient of our log-posterior at the</span></span>
+<span id="cb1-27"><a href="#cb1-27"></a>    <span class="co"># drawn position &amp; recalculate the next proposal by one more</span></span>
+<span id="cb1-28"><a href="#cb1-28"></a>    <span class="co"># leapfrogstep</span></span>
+<span id="cb1-29"><a href="#cb1-29"></a>    <span class="cf">for</span>(step <span class="cf">in</span> <span class="kw">seq_len</span>(leapfrogsteps)){</span>
+<span id="cb1-30"><a href="#cb1-30"></a>      args &lt;-<span class="st"> </span><span class="cf">if</span>(<span class="kw">is.null</span>(design) <span class="op">&amp;&amp;</span><span class="st"> </span><span class="kw">is.null</span>(target)) {</span>
+<span id="cb1-31"><a href="#cb1-31"></a>        <span class="kw">list</span>(proposal<span class="op">$</span>position)</span>
+<span id="cb1-32"><a href="#cb1-32"></a>      } <span class="cf">else</span> <span class="kw">list</span>(proposal<span class="op">$</span>position, design, target)</span>
+<span id="cb1-33"><a href="#cb1-33"></a>      gradient_prop &lt;-<span class="st"> </span><span class="kw">do.call</span>(gradient, args)</span>
+<span id="cb1-34"><a href="#cb1-34"></a>      proposal &lt;-<span class="st"> </span><span class="kw">leapfrog</span>(proposal<span class="op">$</span>position, proposal<span class="op">$</span>momentum, stepsize, gradient_prop)</span>
+<span id="cb1-35"><a href="#cb1-35"></a>    }</span>
+<span id="cb1-36"><a href="#cb1-36"></a>  <span class="co"># Like in Metropolis-Hastings, we compare the (unnormalized) posterior</span></span>
+<span id="cb1-37"><a href="#cb1-37"></a>  <span class="co"># density at our proposal with the density at our previously drawn</span></span>
+<span id="cb1-38"><a href="#cb1-38"></a>  <span class="co"># position in the ratio of those two estimates, which will form the</span></span>
+<span id="cb1-39"><a href="#cb1-39"></a>  <span class="co"># acceptance probability of our drawn proposal</span></span>
+<span id="cb1-40"><a href="#cb1-40"></a>  <span class="co"># If excepted we add the proposal to our output positions variable</span></span>
+<span id="cb1-41"><a href="#cb1-41"></a>    acceptance &lt;-<span class="st"> </span>(<span class="kw">joint_probability</span>(proposal<span class="op">$</span>position, proposal<span class="op">$</span>momentum, <span class="dt">design =</span> design, <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log) <span class="op">/</span></span>
+<span id="cb1-42"><a href="#cb1-42"></a><span class="st">                     </span><span class="kw">joint_probability</span>(position, momentum, <span class="dt">design =</span> design, <span class="dt">target =</span> target, <span class="dt">is_log =</span> is_log))</span>
+<span id="cb1-43"><a href="#cb1-43"></a>    <span class="cf">if</span>(<span class="kw">is.na</span>(acceptance)) acceptance &lt;-<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb1-44"><a href="#cb1-44"></a>    acceptance &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="dv">1</span>, acceptance)</span>
+<span id="cb1-45"><a href="#cb1-45"></a>    positions[iter, ] &lt;-<span class="st"> </span>position &lt;-<span class="st"> </span><span class="cf">if</span>(<span class="kw">runif</span>(<span class="dv">1</span>) <span class="op">&lt;</span><span class="st"> </span>acceptance) proposal<span class="op">$</span>position <span class="cf">else</span> position</span>
+<span id="cb1-46"><a href="#cb1-46"></a>    <span class="kw">setTxtProgressBar</span>(pb, iter)</span>
+<span id="cb1-47"><a href="#cb1-47"></a>  }</span>
+<span id="cb1-48"><a href="#cb1-48"></a>  <span class="kw">return</span>(positions)</span>
+<span id="cb1-49"><a href="#cb1-49"></a>}</span></code></pre></div>
+</section><section id="section-1" class="slide level2" data-background="files/HMC_problem.gif">
 <h2></h2>
 <p>Problem <span class="citation" data-cites="feng20">Feng (2016)</span></p>
 <ul>
 <li class="fragment">taking too few or too large steps <span class="math inline">\(\Rightarrow \ \theta^t\ \&amp; \ \theta^{t+1}\)</span> end up very close.</li>
 </ul>
-</section><section id="hand-tuning-parameters" class="slide level2">
-<h2>(Hand-)Tuning Parameters</h2>
-<ul>
-<li><p><span class="math inline">\(\epsilon = stepsize\)</span></p></li>
-<li><p><span class="math inline">\(\mathcal{L} = \#Leapfrogsteps\)</span></p></li>
-<li><p><span class="math inline">\(\phi = momentum\)</span></p></li>
-</ul>
+<!---
+## (Hand-)Tuning Parameters
+
+* $\epsilon = stepsize$
+
+
+* $\mathcal{L} = \#Leapfrogsteps$
+
+
+* $\phi = momentum$
+
+
 <div class="fragment">
-<p>But how?</p>
+But how?
+
 <center>
 <img src="files/Questioning.gif" width="40%" />
 </center>
 </div>
-</section><section id="setting-the-tuning-parameters" class="slide level2">
-<h2>Setting the tuning parameters</h2>
+
+## Setting the tuning parameters
+
 <div class="fragment">
-<ul>
-<li><p><em>Radius</em>:</p>
-<p>stay in the radius of you target distribution. Rule of thumb: <span class="math inline">\(\epsilon \mathcal{L} = 1\)</span></p></li>
-</ul>
+* *Radius*:
+  
+  stay in the radius of you target distribution. Rule of thumb: $\epsilon \mathcal{L} = 1$
 </div>
+
 <div class="fragment">
-<ul>
-<li><p><em>adaptive updating</em>:</p>
-<ol type="1">
-<li><p>run <span class="math inline">\(M_{init}\)</span> steps with initial setting</p></li>
-<li><p>adjust the parameters based on knowledge from previous run and rerun the model for <span class="math inline">\(M_{adjust}\)</span> steps</p></li>
-</ol></li>
-</ul>
+* *adaptive updating*: 
+
+  1) run $M_{init}$ steps with initial setting
+
+  2) adjust the parameters based on knowledge from previous run and rerun the model for $M_{adjust}$ steps
 </div>
+
 <div class="fragment">
-<ul>
-<li><p><em>Acceptance Sweet Spot</em>: 65% acceptance rate (<span class="math inline">\(\alpha\)</span>)</p>
-<p>if <span class="math inline">\(\alpha &lt; 0.65 \Rightarrow\)</span> leapfrog jumps are too ambitious. Set <span class="math inline">\(\mathcal{L}\uparrow, \epsilon \downarrow\)</span>.</p>
-<p>if <span class="math inline">\(\alpha &gt; 0.65 \Rightarrow\)</span> leapfrog jumps are too cautious. Set <span class="math inline">\(\mathcal{L} \downarrow, \epsilon \uparrow\)</span>. (see <span class="citation" data-cites="gelman13">Gelman et al. (2013)</span>)</p></li>
-</ul>
+* *Acceptance Sweet Spot*: 65% acceptance rate ($\alpha$)
+  
+  if $\alpha < 0.65 \Rightarrow$ leapfrog jumps are too ambitious.
+  Set $\mathcal{L}\uparrow, \epsilon \downarrow$.
+  
+  if $\alpha > 0.65 \Rightarrow$ leapfrog jumps are too cautious.
+  Set $\mathcal{L}  \downarrow, \epsilon \uparrow$.
+(see @gelman13)
 </div>
+--->
 </section><section id="desirable-behavoir-for-tuning-parameters-tuning-parameters-hmc" class="slide level2">
 <h2>Desirable behavoir for tuning parameters tuning parameters HMC:</h2>
 <p><br></p>
@@ -871,11 +727,11 @@ hamiltonianMC <- function(position_init, stepsize, leapfrogsteps,
 <p><span class="math inline">\(\Rightarrow\)</span> All three approaches may be combined. In the following we will discuss the implementation for a No-U-Turn sampler with dual averaging, as discussed in Gelman and Hoffman (2014). <span class="citation" data-cites="hoffman2014">Hoffman and Gelman (2014)</span></p>
 </div>
 </section></section>
-<section><section id="section-3" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff" class="r-fit-text">
+<section><section id="section-2" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff">
 The (naive) No-U-Turn Sampler
 </h1>
 <center>
-<img src="files/nNuts.png" width="876" />
+<img src="files/HMC.png" width="876" />
 </center>
 <!--
 NOTES:
@@ -901,9 +757,10 @@ NOTES:
 </ol></li>
 </ul>
 </div>
+<br>
 <div class="fragment">
 <ul>
-<li>The <span class="math inline">\(\mathcal{L_t}\)</span>-Leapfrog steps performed from starting state <span class="math inline">\((\theta_{right}, r_{right})\)</span> in phase-space to their end <span class="math inline">\((\theta_{left}, r_{left})\)</span> after <span class="math inline">\(\mathcal{L_t}\)</span> Leapfrogsteps might look as follows:</li>
+<li>The <span class="math inline">\(\mathcal{L_t}\)</span>-Leapfrog steps performed from starting state <span class="math inline">\((\theta_{right}, r_{right})\)</span> in phase-space to their end <span class="math inline">\((\theta_{left}, r_{left})\)</span> after <span class="math inline">\(\mathcal{L_t}\)</span> Leapfrogsteps might look as follows: <br></li>
 </ul>
 </div>
 <div class="fragment">
@@ -914,20 +771,12 @@ NOTES:
 Left Plot: Expanding the trajectory in either direction typically extends the trajectory further across the energy level set (grey) towards unexplored neighborhood. Right Plot: Further expansion typically contracts the boundaries of the trajectory towards each other and neighborhoods that have already been explored.
 </p>
 </div>
+Criterion <span class="math display">\[
+r_{right} (\theta_{left} - \theta_{right}) &lt; 0
+\]</span>
 </center>
 </div>
 <p></small></p>
-</section><section id="criterion" class="slide level2">
-<h2>Criterion</h2>
-<p><span class="math inline">\(\Rightarrow\)</span> explore the energy level stepwise <span class="citation" data-cites="betancourt2017">Betancourt (2017)</span></p>
-<p><span class="math display">\[
-r_{left} (\theta_{right} - \theta_{left}) &lt; 0\\
-r_{right} (\theta_{left} - \theta_{right}) &lt; 0
-\]</span></p>
-<div class="fragment">
-<p><em>Derivation:</em> this is basically a euclidean derivative w.r.t. time t of half the squared distance between two positions: <span class="math inline">\(\frac{d(\theta_1 - \theta_2)^T(\theta_1 - \theta_2)}{dt}\)</span>.</p>
-<p><em>Intuition:</em> this is the dot product of the two vectors from the picture. If the dot product gets higher than 0, the trajectory will make a <em>u-turn</em>. This is when we “traveled maximally” in phase space an so where we want to stop exploring the enery set.</p>
-</div>
 </section><section id="naive-stepwise-exploration-scheme" class="slide level2">
 <h2>Naive Stepwise Exploration Scheme</h2>
 <p><br></p>
@@ -1026,7 +875,7 @@ Example of a trajectory generated during one iteration of NUTS.
 <span id="cb2-7"><a href="#cb2-7"></a><span class="co">#&#39; @param target a target feature vector if posterior is a model</span></span>
 <span id="cb2-8"><a href="#cb2-8"></a><span class="co">#&#39; @param is_log if the likelihood is already logged</span></span>
 <span id="cb2-9"><a href="#cb2-9"></a><span class="co">#&#39;</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>sample_naiveNUTS &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
+<span id="cb2-10"><a href="#cb2-10"></a>sample_naiveNUTS_s &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
 <span id="cb2-11"><a href="#cb2-11"></a>  <span class="co">###### Preparation ############################################</span></span>
 <span id="cb2-12"><a href="#cb2-12"></a>  <span class="co"># initial position will be our starting value for the algorithm</span></span>
 <span id="cb2-13"><a href="#cb2-13"></a>  <span class="co"># positions will be a list containing all of our sampled positions</span></span>
@@ -1044,7 +893,7 @@ Example of a trajectory generated during one iteration of NUTS.
 <span id="cb3-7"><a href="#cb3-7"></a><span class="co">#&#39; @param target a target feature vector if posterior is a model</span></span>
 <span id="cb3-8"><a href="#cb3-8"></a><span class="co">#&#39; @param is_log if the likelihood is already logged</span></span>
 <span id="cb3-9"><a href="#cb3-9"></a><span class="co">#&#39;</span></span>
-<span id="cb3-10"><a href="#cb3-10"></a>sample_naiveNUTS &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
+<span id="cb3-10"><a href="#cb3-10"></a>sample_naiveNUTS_s &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
 <span id="cb3-11"><a href="#cb3-11"></a>  <span class="co">###### Preparation ############################################</span></span>
 <span id="cb3-12"><a href="#cb3-12"></a>  <span class="co"># initial position will be our starting value for the algorithm</span></span>
 <span id="cb3-13"><a href="#cb3-13"></a>  <span class="co"># positions will be a list containing all of our sampled positions</span></span>
@@ -1079,7 +928,7 @@ Example of a trajectory generated during one iteration of NUTS.
 <span id="cb4-7"><a href="#cb4-7"></a><span class="co">#&#39; @param target a target feature vector if posterior is a model</span></span>
 <span id="cb4-8"><a href="#cb4-8"></a><span class="co">#&#39; @param is_log if the likelihood is already logged</span></span>
 <span id="cb4-9"><a href="#cb4-9"></a><span class="co">#&#39;</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>sample_naiveNUTS &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
+<span id="cb4-10"><a href="#cb4-10"></a>sample_naiveNUTS_s &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
 <span id="cb4-11"><a href="#cb4-11"></a>  <span class="co">###### Preparation ############################################</span></span>
 <span id="cb4-12"><a href="#cb4-12"></a>  <span class="co"># initial position will be our starting value for the algorithm</span></span>
 <span id="cb4-13"><a href="#cb4-13"></a>  <span class="co"># positions will be a list containing all of our sampled positions</span></span>
@@ -1146,7 +995,7 @@ Example of a trajectory generated during one iteration of NUTS.
 <span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&#39; @param target a target feature vector if posterior is a model</span></span>
 <span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&#39; @param is_log if the likelihood is already logged</span></span>
 <span id="cb5-9"><a href="#cb5-9"></a><span class="co">#&#39;</span></span>
-<span id="cb5-10"><a href="#cb5-10"></a>sample_naiveNUTS &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
+<span id="cb5-10"><a href="#cb5-10"></a>sample_naiveNUTS_s &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, stepsize, iteration, <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>) {</span>
 <span id="cb5-11"><a href="#cb5-11"></a>  <span class="co">###### Preparation ############################################</span></span>
 <span id="cb5-12"><a href="#cb5-12"></a>  <span class="co"># initial position will be our starting value for the algorithm</span></span>
 <span id="cb5-13"><a href="#cb5-13"></a>  <span class="co"># positions will be a list containing all of our sampled positions</span></span>
@@ -1436,11 +1285,11 @@ Example of a trajectory generated during one iteration of NUTS.
 <span id="cb10-67"><a href="#cb10-67"></a>  }</span>
 <span id="cb10-68"><a href="#cb10-68"></a>}</span></code></pre></div>
 </section></section>
-<section><section id="section-4" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff" class="r-fit-text">
-No-U-Turn Sampler with dual averaging
+<section><section id="section-3" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff" class="r-fit-text">
+The efficient No-U-Turn Sampler
 </h1>
 <center>
-<img src="files/NUTS.png" width="876" />
+<img src="files/nNuts.png" width="876" />
 </center></section><section id="problems-of-naive-nuts" class="slide level2">
 <h2>Problems of naive NUTS</h2>
 <p>Recall the example trajectory:</p>
@@ -1465,29 +1314,97 @@ Example of a trajectory generated during one iteration of NUTS.
 </ul>
 </section><section id="efficient-nuts---a-solution" class="slide level2">
 <h2>Efficient NUTS - a solution</h2>
-<p>Idea:</p>
+<p><br><br> Idea: <br></p>
 <ul>
-<li><p>Implement a transition kernel that produces larger jumps than uniform sampling while keeping <span class="math inline">\(\mathcal{C}\)</span> balanced.</p></li>
 <li><p>Therefore sample from <span class="math inline">\(\mathcal{C}\)</span> incrementally by its subtrees</p></li>
 <li><p>Quit early if any stopping criteria is met</p></li>
 </ul>
 <div class="fragment">
 <p>For each subtree <span class="math inline">\(\mathcal{B_{st}}\)</span> in <span class="math inline">\(\mathcal{B}\)</span>:</p>
+</div>
 <ul>
 <li class="fragment">sample a valid state <span class="math inline">\((\theta, r) \in \mathcal{C_{st}}\)</span> as representee</li>
 </ul>
 <ul>
 <li class="fragment">choose a pair by giving them a weight proportional to their subtrees element size</li>
 </ul>
+<div class="fragment">
+<p><strong>this method… </strong></p>
 </div>
 <div class="fragment">
+<p><span class="math inline">\(\Rightarrow\)</span> stores only <span class="math inline">\(\mathcal{O}(j)\)</span> position momentum vectors and</p>
+<p><span class="math inline">\(\Rightarrow\)</span> is sparse at calculating the gradient as build tree can be canceled early if U-turn was made</p>
+</div>
+</section><section id="differences-to-naive-nuts" class="slide level2">
+<h2>Differences to naive NUTS</h2>
+<center>
+<div style="border: 1px solid #ddd; padding: 0px; overflow-y: scroll; height:600px; ">
+<table class=" lightable-paper" style='font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
+<thead>
+<tr>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+name
+</th>
+<th style="text-align:left;position: sticky; top:0; background-color: #FFFFFF;">
+logo
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Dif NUTS
+</td>
+<td style="text-align:left;">
+<img src="files/git_Dif_NUTS.png">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Dif build_tree
+</td>
+<td style="text-align:left;">
+<img src="files/git_Dif_build_Tree.png">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Dif build leaf
+</td>
+<td style="text-align:left;">
+<img src="files/git_Dif_leaf.png">
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</center>
+</section></section>
+<section><section id="section-4" class="title-slide slide level1" data-background="#262626"><h1></h1><h1 style="color: #fff" class="r-fit-text">
+No-U-Turn Sampler with dual averaging
+</h1>
+<center>
+<img src="files/NUTS.png" width="876" />
+</center></section><section id="intuition" class="slide level2">
+<h2>Intuition</h2>
+<p><br></p>
 <ul>
-<li><p><span class="math inline">\(\Rightarrow\)</span> this method stores only <span class="math inline">\(\mathcal{O}(j)\)</span> position momentum vectors and</p></li>
-<li><p>is sparse at calculating the gradient as build tree can be canceled early if U-turn was made</p></li>
+<li class="fragment">Acceptance probability for this, would be one if we could exactly run the hamiltonian dynamics as it drives us towards lower density regions.</li>
 </ul>
+<div class="fragment">
+<p><span class="math inline">\(\Rightarrow\)</span> Essentially, this acceptance probability is related to how good the numerical approximation of Leapfrogsteps to the Hamiltonian dynamics is.</p>
+</div>
+<ul>
+<li class="fragment">Then, we balance the tradeoff between the error and the time it takes to generate any given sample by varying <span class="math inline">\(\delta\)</span> either spend more time generating better approximations of the Hamiltonian-dynamics, or alternately spend less time generating crappier ones knowing that we will throw more away.</li>
+</ul>
+<div class="fragment">
+<center>
+<img src="files/Leapfrog_Discretization.png" width="75%" />
+<center>
 </div>
 </section><section id="adaptively-tuning-the-stepsize" class="slide level2">
 <h2>Adaptively tuning the stepsize</h2>
+<br>
 <div class="fragment">
 <p>Idea: Find a <strong>stepsize</strong> <span class="math inline">\(\epsilon\)</span> in a Warm-Up Phase that guarantees quick convergence Set this value in a Stationary Phase to make the algorithm converge</p>
 </div>
@@ -1504,22 +1421,6 @@ Example of a trajectory generated during one iteration of NUTS.
 <div class="fragment">
 <p>If acceptance <span class="math inline">\(\alpha_t\)</span> was to high we encourage the algorithm for larger jumps, rising <span class="math inline">\(\epsilon_{t+1}\)</span></p>
 <p>If acceptance <span class="math inline">\(\alpha_t\)</span> was to low we encourage the algorithm for smaller jumps, decreasing <span class="math inline">\(\epsilon_{t+1}\)</span></p>
-</div>
-</section><section id="intuition" class="slide level2">
-<h2>Intuition</h2>
-<ul>
-<li class="fragment">Acceptance probability for this, would be one if we could exactly run the hamiltonian dynamics as it drives us towards lower density regions.</li>
-</ul>
-<ul>
-<li class="fragment"><span class="math inline">\(\Rightarrow\)</span> Essentially, this acceptance probability is related to how good the numerical approximation of Leapfrogsteps to the Hamiltonian dynamics is.</li>
-</ul>
-<ul>
-<li class="fragment">Then, we balance the tradeoff between the error and the time it takes to generate any given sample by varying <span class="math inline">\(\delta\)</span> either spend more time generating better approximations of the Hamiltonian-dynamics, or alternately spend less time generating crappier ones knowing that we will throw more away.</li>
-</ul>
-<div class="fragment">
-<center>
-<img src="files/Leapfrog_Discretization.png" width="75%" />
-<center>
 </div>
 </section><section id="dual-averaging" class="slide level2">
 <h2>Dual Averaging</h2>
@@ -1640,9 +1541,6 @@ log(\overline{\epsilon}^t) =t^{-\kappa} \epsilon^t + (1-t^{-\kappa}) \overline{\
 <span id="cb12-25"><a href="#cb12-25"></a>  <span class="kw">exp</span>(proposal_dens <span class="op">-</span><span class="st"> </span>initial_dens)</span>
 <span id="cb12-26"><a href="#cb12-26"></a>}</span></code></pre></div>
 </div>
-</section><section id="intuition-behind-automatising-the-step-size" class="slide level2">
-<h2>Intuition behind automatising the step size:</h2>
-<p>With that said, the idea is that the slice sampler is there because we can’t solve the dynamical system exactly, but with a discrete system. Because it’s going to have an error, we use the slice sampler to compensate for bias that might exist if we just accepted the numerical Hamiltonian dynamics as if they were exact.</p>
 </section><section id="implement-efficient-nuts-with-dual-averaging" class="slide level2">
 <h2>Implement efficient NUTS with dual averaging</h2>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="co">#&#39; Efficient No-UTurn</span></span>
@@ -1654,7 +1552,7 @@ log(\overline{\epsilon}^t) =t^{-\kappa} \epsilon^t + (1-t^{-\kappa}) \overline{\
 <span id="cb13-7"><a href="#cb13-7"></a><span class="co">#&#39; @param adaption iterations where  stepsize is adapted. Must be smaller than iterations.</span></span>
 <span id="cb13-8"><a href="#cb13-8"></a><span class="co">#&#39; @param target_accpentance targeted average acceptance rate of proposals</span></span>
 <span id="cb13-9"><a href="#cb13-9"></a><span class="co">#&#39;</span></span>
-<span id="cb13-10"><a href="#cb13-10"></a>sample_noUturn &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, iteration,</span>
+<span id="cb13-10"><a href="#cb13-10"></a>sample_noUturn_s &lt;-<span class="st"> </span><span class="cf">function</span>(position_init, iteration,</span>
 <span id="cb13-11"><a href="#cb13-11"></a>                           <span class="dt">adaption =</span> <span class="fl">0.5</span> <span class="op">*</span><span class="st"> </span>iteration, <span class="dt">target_accpentance =</span> <span class="fl">0.65</span>,</span>
 <span id="cb13-12"><a href="#cb13-12"></a>                           <span class="dt">design =</span> <span class="ot">NULL</span>, <span class="dt">target =</span> <span class="ot">NULL</span>, <span class="dt">is_log =</span> <span class="ot">TRUE</span>, <span class="dt">max_tree_depth =</span> 10L) {</span>
 <span id="cb13-13"><a href="#cb13-13"></a>  stepsize &lt;-<span class="st"> </span><span class="kw">find_initial_stepsize</span>(position_init, design, target, is_log)</span>
@@ -1785,66 +1683,107 @@ log(\overline{\epsilon}^t) =t^{-\kappa} \epsilon^t + (1-t^{-\kappa}) \overline{\
 <span id="cb14-70"><a href="#cb14-70"></a>  proposal_state<span class="op">$</span>run &lt;-<span class="st"> </span><span class="dv">0</span> <span class="op">+</span><span class="st"> </span>(<span class="kw">exp</span>(proposal_density <span class="op">+</span><span class="st"> </span>deltamax) <span class="op">&gt;</span><span class="st"> </span>slice)</span>
 <span id="cb14-71"><a href="#cb14-71"></a>  proposal_state</span>
 <span id="cb14-72"><a href="#cb14-72"></a>}</span></code></pre></div>
+</section><section id="summarize-nuts" class="slide level2">
+<h2>Summarize NUTS</h2>
+The sampling procedure is summarized as follows: <br><br>
+<div class="fragment">
+<ol type="1">
+<li>Set the initial value of <span class="math inline">\(theta\)</span>, <span class="math inline">\(\epsilon\)</span> and values of <span class="math inline">\(\delta\)</span> <span class="math inline">\(t_0\)</span>, <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\gamma\)</span> <span class="math inline">\(-\kappa\)</span></li>
+</ol>
+</div>
+<br>
+<div class="fragment">
+<ol start="2" type="1">
+<li>Generate momentum <span class="math inline">\(r_0\)</span> from the standard normal distribution r∼N(0,I).</li>
+</ol>
+</div>
+<br>
+<div class="fragment">
+<ol start="3" type="1">
+<li>Generate slice variable u from the uniform distribution <span class="math inline">\(s∼Uniform(0,exp(logf(\theta)−\frac{1}{2}r^Tr))\)</span>.</li>
+</ol>
+</div>
+<br>
+<div class="fragment">
+<ol start="4" type="1">
+<li>Generate valid states <span class="math inline">\(\mathcal{C}\)</span> by using the doubling method and sample a proposal <span class="math inline">\((\hat{\theta},\hat{r})\)</span> iteratively</li>
+</ol>
+</div>
+<br>
+<div class="fragment">
+<ol start="5" type="1">
+<li>Accept the proposal <span class="math inline">\((\hat{\theta},\hat{r})\)</span> with probability proportional to the valid_set size.</li>
+</ol>
+</div>
+<br>
+<div class="fragment">
+<ol start="6" type="1">
+<li>Update <span class="math inline">\(\epsilon^t\)</span> by dual averaging.</li>
+</ol>
+</div>
+<br>
+<div class="fragment">
+<ol start="7" type="1">
+<li>Repeat steps 2 to 6, step 6 is repeated only during the warm-up phase. <br> see <span class="citation" data-cites="nishio">Nishio and Arakawa (2019)</span></li>
+</ol>
+</div>
 </section></section>
 <section><section id="examples" class="title-slide slide level1"><h1>Examples</h1><center>
 <img data-src="files/DancingPeaks.gif" /><!-- -->
-</center></section><section id="sample-from-mathcaln_500-i" class="slide level2">
-<h2>Sample from <span class="math inline">\(\mathcal{N_{50}}(0, I)\)</span></h2>
-<p>The call:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>posterior_density =<span class="st"> </span>mvtnorm<span class="op">::</span>dmvnorm</span>
-<span id="cb15-2"><a href="#cb15-2"></a>gradient &lt;-<span class="st"> </span><span class="cf">function</span>(position){<span class="op">-</span>position}</span>
-<span id="cb15-3"><a href="#cb15-3"></a>sample50norm &lt;-<span class="st"> </span><span class="kw">sample_noUturn</span>(<span class="dt">position_init =</span> <span class="kw">runif</span>(<span class="dv">50</span>, <span class="dv">-5</span>, <span class="dv">-2</span>), <span class="dt">iteration =</span> <span class="fl">2e3</span>, <span class="dt">is_log =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
-<div class="fragment">
-<p>Trace the algorithm:</p>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-43-1.png" /><!-- --></p>
-</div>
-</section><section id="regression---an-artificial-data-set" class="slide level2">
+</center></section><section id="regression---an-artificial-data-set" class="slide level2">
 <h2>Regression - an artificial data set</h2>
 <p>Generate data:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>design &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dv">1</span>, <span class="kw">sapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, <span class="cf">function</span>(x) <span class="kw">runif</span>(<span class="dv">400</span>)))</span>
-<span id="cb16-2"><a href="#cb16-2"></a>perfect_position &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span>
-<span id="cb16-3"><a href="#cb16-3"></a>target &lt;-<span class="st"> </span>design <span class="op">%*%</span><span class="st"> </span>perfect_position <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">400</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>design &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dv">1</span>, <span class="kw">sapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, <span class="cf">function</span>(x) <span class="kw">runif</span>(<span class="dv">400</span>)))</span>
+<span id="cb15-2"><a href="#cb15-2"></a>perfect_position &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span>
+<span id="cb15-3"><a href="#cb15-3"></a>target &lt;-<span class="st"> </span>design <span class="op">%*%</span><span class="st"> </span>perfect_position <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">400</span>)</span></code></pre></div>
+<div class="fragment">
 <p>Take a look at the data:</p>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-45-1.png" /><!-- --></p>
-</section><section id="regression---comparison" class="slide level2">
-<h2>Regression - Comparison</h2>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">lm</span>(target<span class="op">~</span>., <span class="dt">data =</span> <span class="kw">as.data.frame</span>(design[,<span class="op">-</span><span class="dv">1</span>]))</span></code></pre></div>
+<p><img src="Presentation_files/figure-revealjs/unnamed-chunk-36-1.png" width="50%" /></p>
+</div>
+</section><section id="regression---set-up-nuts" class="slide level2">
+<h2>Regression - Set Up NUTS</h2>
+<div class="fragment">
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>posterior_density =<span class="st"> </span>log_linear</span>
+<span id="cb16-2"><a href="#cb16-2"></a>gradient =<span class="st"> </span>partial_deriv_lin</span></code></pre></div>
+</div>
+<div class="fragment">
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>linear39 &lt;-<span class="st"> </span><span class="kw">sample_noUturn</span>(<span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>), <span class="dt">iteration =</span> <span class="fl">2e3</span>, <span class="dt">design =</span> design, <span class="dt">target =</span> target,</span>
+<span id="cb17-2"><a href="#cb17-2"></a>                         <span class="dt">is_log =</span> <span class="ot">TRUE</span>, <span class="dt">seed =</span> 123L, <span class="dt">target_accpentance =</span> <span class="fl">.39</span>, <span class="dt">max_tree_depth =</span> 12L)</span></code></pre></div>
+</div>
+<div class="fragment">
+
+</div>
+<div class="fragment">
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="kw">lm</span>(target<span class="op">~</span>., <span class="dt">data =</span> <span class="kw">as.data.frame</span>(design[,<span class="op">-</span><span class="dv">1</span>]))</span></code></pre></div>
 <pre><code>## 
 ## Call:
 ## lm(formula = target ~ ., data = as.data.frame(design[, -1]))
 ## 
 ## Coefficients:
 ## (Intercept)           V1           V2  
-##       1.042        2.090        3.039</code></pre>
-</section><section id="regression---set-up-nuts" class="slide level2">
-<h2>Regression - Set Up NUTS</h2>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>posterior_density =<span class="st"> </span>log_linear</span>
-<span id="cb19-2"><a href="#cb19-2"></a>gradient =<span class="st"> </span>partial_deriv_lin</span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>linear &lt;-<span class="st"> </span><span class="kw">sample_noUturn</span>(<span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">4</span>), <span class="dt">iteration =</span> <span class="fl">2e3</span>, <span class="dt">design =</span> design, <span class="dt">target =</span> target,</span>
-<span id="cb20-2"><a href="#cb20-2"></a>                         <span class="dt">is_log =</span> <span class="ot">TRUE</span>, <span class="dt">seed =</span> 123L, <span class="dt">target_accpentance =</span> <span class="fl">.65</span>, <span class="dt">max_tree_depth =</span> 12L)</span></code></pre></div>
+##      0.8961       2.3980       2.8388</code></pre>
+</div>
 </section><section id="regression---trace-plot-for-parameters" class="slide level2">
 <h2>Regression - Trace Plot for parameters</h2>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-51-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-42-1.png" /><!-- --></p>
+</section><section id="regression---autocorrelation" class="slide level2">
+<h2>Regression - Autocorrelation</h2>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-43-1.png" /><!-- --></p>
 </section><section id="classification---endometrial-data-set" class="slide level2">
 <h2>Classification - Endometrial data Set</h2>
+<p><br> <br> <br> <br></p>
 <ul>
 <li><strong>Goal:</strong> Predict whether a person has endometrial cancer or not.</li>
 </ul>
+<br>
 <div class="fragment">
-<p><strong>Dataset:</strong> &gt;A data frame with 79 rows and 4 variables: NV Neovasculation risk factor indicator (0=Absent, 1=Present)<br />
-PI Pulsatility index of arteria uterina<br />
-EH Endometrium height</p>
+<p><strong>Dataset:</strong> A data frame with 79 rows and 4 variables: <br> NV Neovasculation risk factor indicator (0=Absent, 1=Present) <br> PI Pulsatility index of arteria uterina <br> EH Endometrium height <br></p>
 </div>
 <div class="fragment">
 <ul>
 <li>We standardize the data to get an estimates independent from their scale.</li>
 </ul>
 </div>
-<pre><code>## 
-## Attaching package: &#39;hmclearn&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:NoUTurn&#39;:
-## 
-##     leapfrog</code></pre>
 </section><section id="classification---define-posterior-and-gradient-function" class="slide level2">
 <h2>Classification - Define posterior and gradient function</h2>
 <small>
@@ -1895,104 +1834,177 @@ f(\boldsymbol\beta | \mathbf{X}, \mathbf{y}, \sigma^2) &amp;\propto f(\mathbf{y}
 \begin{aligned}
 \nabla_{\boldsymbol\beta} \log f(\boldsymbol\beta, \mathbf{X}, \mathbf{y}, \sigma^2) &amp;\propto \mathbf{X}^T \left ( \mathbf{y} - \mathbf{1}n+ \frac{e^{-\mathbf{X}\boldsymbol\beta}}{1 + e^{-\mathbf{X}\boldsymbol\beta}}\right) - \boldsymbol\beta / \sigma^2 
 \end{aligned}
-\]</span></p>
+\]</span> <span class="citation" data-cites="thomas">Thomas and Tu (2020)</span></p>
 </div>
 </small>
 <div class="fragment">
 <p>Finally simply initialize the functions:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>posterior_density =<span class="st"> </span>bernoulli_pen</span>
-<span id="cb23-2"><a href="#cb23-2"></a>gradient =<span class="st"> </span>partial_deriv_sigmoid</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>posterior_density =<span class="st"> </span>bernoulli_pen</span>
+<span id="cb20-2"><a href="#cb20-2"></a>gradient =<span class="st"> </span>partial_deriv_benoulli</span></code></pre></div>
 </div>
+</section><section id="classification---run-hmc" class="slide level2">
+<h2>Classification - Run HMC</h2>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>hmc &lt;-<span class="st"> </span><span class="kw">hamiltonianMC</span>(<span class="kw">runif</span>(<span class="dv">4</span>, <span class="dv">-5</span>, <span class="dv">5</span>), <span class="dt">iterations =</span> <span class="fl">5e3</span>,<span class="dt">stepsize =</span> <span class="fl">0.1</span>, <span class="dt">leapfrogsteps =</span> <span class="dv">10</span>, <span class="dt">design =</span>  X, <span class="dt">target =</span> y)</span></code></pre></div>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-49-1.png" /><!-- --></p>
 </section><section id="classification---run-nuts" class="slide level2">
 <h2>Classification - Run NUTS</h2>
+<p><br><br><br></p>
 <p>Run <code>sample_noUturn</code> for 5000 iterations with a small target acceptance of <code>0.39</code> As our posterior is already logged we ca specify the <code>is_logged</code> argument as <code>TRUE</code></p>
 <p>We use a weak prior where <span class="math inline">\(\sigma^2I = 200I\)</span>, this is analog t a very week penalty.</p>
 <div class="fragment">
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>initial_pos &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) <span class="kw">runif</span>(<span class="dv">4</span>, <span class="dv">-5</span>, <span class="dv">5</span>))</span>
-<span id="cb24-2"><a href="#cb24-2"></a>param_sample_binary &lt;-<span class="st"> </span><span class="kw">lapply</span>(initial_pos, sample_noUturn, <span class="dt">iteration =</span> <span class="fl">5e3</span>,</span>
-<span id="cb24-3"><a href="#cb24-3"></a>                              <span class="dt">design =</span> X, <span class="dt">target =</span> y,</span>
-<span id="cb24-4"><a href="#cb24-4"></a>                              <span class="dt">is_log =</span> <span class="ot">TRUE</span>, <span class="dt">target_accpentance =</span> <span class="fl">.39</span>,</span>
-<span id="cb24-5"><a href="#cb24-5"></a>                              <span class="dt">max_tree_depth =</span> 12L)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>initial_pos &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) <span class="kw">runif</span>(<span class="dv">4</span>, <span class="dv">-5</span>, <span class="dv">5</span>))</span>
+<span id="cb22-2"><a href="#cb22-2"></a>param_sample_binary &lt;-<span class="st"> </span><span class="kw">lapply</span>(initial_pos, sample_noUturn, <span class="dt">iteration =</span> <span class="fl">5e3</span>,</span>
+<span id="cb22-3"><a href="#cb22-3"></a>                              <span class="dt">design =</span> X, <span class="dt">target =</span> y,</span>
+<span id="cb22-4"><a href="#cb22-4"></a>                              <span class="dt">is_log =</span> <span class="ot">TRUE</span>, <span class="dt">target_accpentance =</span> <span class="fl">.39</span>,</span>
+<span id="cb22-5"><a href="#cb22-5"></a>                              <span class="dt">max_tree_depth =</span> 12L)</span></code></pre></div>
 </div>
-<p>This took 24 hours of calculation, plus preparation.</p>
+<ul>
+<li class="fragment">This took 24 hours of calculation, plus preparation.</li>
+</ul>
 </section><section id="trace-the-run" class="slide level2">
 <h2>Trace the run</h2>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>attrib &lt;-<span class="st"> </span><span class="kw">lapply</span>(param_sample_binary, attributes)</span>
-<span id="cb25-2"><a href="#cb25-2"></a>stepsize &lt;-<span class="kw">as.data.frame</span>(<span class="kw">sapply</span>(attrib, <span class="cf">function</span>(x) <span class="kw">log</span>(x<span class="op">$</span>dual_averaging<span class="op">$</span>stepsize)))</span>
-<span id="cb25-3"><a href="#cb25-3"></a><span class="kw">ggplot</span>(stepsize, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">seq_len</span>(<span class="dv">2501</span>), <span class="dt">y =</span> V1)) <span class="op">+</span></span>
-<span id="cb25-4"><a href="#cb25-4"></a><span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
-<span id="cb25-5"><a href="#cb25-5"></a><span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> V2), <span class="dt">colour =</span> <span class="st">&quot;blue&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;log stepsize value during Warm Up&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">xlab</span>(<span class="st">&quot;iteration&quot;</span>)</span></code></pre></div>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-57-1.png" /><!-- --></p>
-<p>Sationary epsilon after adaptive Warm Up:</p>
+<p><img src="Presentation_files/figure-revealjs/unnamed-chunk-53-1.png" width="50%" /></p>
+<p>Sationary log-epsilon after adaptive Warm Up:</p>
+<pre><code>## [1] -11.32922 -11.64710</code></pre>
 </section><section id="classification---check-convergence-by-traceplots" class="slide level2">
 <h2>Classification - Check Convergence by Traceplots</h2>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-59-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-55-1.png" /><!-- --></p>
 </section><section id="classification---check-convergence-by-density-plots" class="slide level2">
 <h2>Classification - Check Convergence by Density Plots</h2>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-60-1.png" /><!-- --></p>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-56-1.png" /><!-- --></p>
 </section><section id="classification---prediction-and-comparison" class="slide level2">
 <h2>Classification - Prediction and Comparison</h2>
+<br> <br>
 <div class="fragment">
 <p>Lets compare our models mean parameter Estimators to those of a GLM</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>f &lt;-<span class="st"> </span>glmnet<span class="op">::</span><span class="kw">glmnet</span>(X, y, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="dt">lambda =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">200</span>)</span>
-<span id="cb26-2"><a href="#cb26-2"></a>mean_estimate &lt;-<span class="st"> </span><span class="kw">lapply</span>(param_distrib, colMeans)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>f &lt;-<span class="st"> </span>glmnet<span class="op">::</span><span class="kw">glmnet</span>(X, y, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>, <span class="dt">lambda =</span> <span class="dv">1</span><span class="op">/</span><span class="dv">200</span>)</span></code></pre></div>
 </div>
+<br> <br>
 <div class="fragment">
+
 <table>
-<caption>parameter Estimates averaged for last 1000 iterations vs penalized GLM</caption>
+<caption>
+parameter Estimates mode for last 1000 iterations vs penalized GLM
+</caption>
 <thead>
-<tr class="header">
-<th></th>
-<th style="text-align: right;">intercept</th>
-<th style="text-align: right;">slope1</th>
-<th style="text-align: right;">slope2</th>
-<th style="text-align: right;">slope3</th>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+intercept
+</th>
+<th style="text-align:right;">
+slope1
+</th>
+<th style="text-align:right;">
+slope2
+</th>
+<th style="text-align:right;">
+slope3
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td>Sample1</td>
-<td style="text-align: right;">2.18</td>
-<td style="text-align: right;">-0.32</td>
-<td style="text-align: right;">-1.93</td>
-<td style="text-align: right;">6.74</td>
+<tr>
+<td style="text-align:left;">
+Sample1
+</td>
+<td style="text-align:right;">
+2.18
+</td>
+<td style="text-align:right;">
+-0.32
+</td>
+<td style="text-align:right;">
+-1.93
+</td>
+<td style="text-align:right;">
+6.74
+</td>
 </tr>
-<tr class="even">
-<td>Sample2</td>
-<td style="text-align: right;">0.73</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-2.02</td>
-<td style="text-align: right;">4.22</td>
+<tr>
+<td style="text-align:left;">
+Sample2
+</td>
+<td style="text-align:right;">
+0.73
+</td>
+<td style="text-align:right;">
+-0.23
+</td>
+<td style="text-align:right;">
+-2.02
+</td>
+<td style="text-align:right;">
+4.22
+</td>
 </tr>
-<tr class="odd">
-<td>Sample3</td>
-<td style="text-align: right;">1.06</td>
-<td style="text-align: right;">-0.41</td>
-<td style="text-align: right;">-2.05</td>
-<td style="text-align: right;">4.47</td>
+<tr>
+<td style="text-align:left;">
+Sample3
+</td>
+<td style="text-align:right;">
+1.06
+</td>
+<td style="text-align:right;">
+-0.41
+</td>
+<td style="text-align:right;">
+-2.05
+</td>
+<td style="text-align:right;">
+4.47
+</td>
 </tr>
-<tr class="even">
-<td>Sample4</td>
-<td style="text-align: right;">0.96</td>
-<td style="text-align: right;">-0.37</td>
-<td style="text-align: right;">-2.30</td>
-<td style="text-align: right;">4.69</td>
+<tr>
+<td style="text-align:left;">
+Sample4
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+<td style="text-align:right;">
+-0.37
+</td>
+<td style="text-align:right;">
+-2.30
+</td>
+<td style="text-align:right;">
+4.69
+</td>
 </tr>
-<tr class="odd">
-<td>regularized GLM</td>
-<td style="text-align: right;">0.87</td>
-<td style="text-align: right;">-0.31</td>
-<td style="text-align: right;">-1.80</td>
-<td style="text-align: right;">4.14</td>
+<tr>
+<td style="text-align:left;">
+regularized GLM
+</td>
+<td style="text-align:right;">
+0.87
+</td>
+<td style="text-align:right;">
+-0.31
+</td>
+<td style="text-align:right;">
+-1.80
+</td>
+<td style="text-align:right;">
+4.14
+</td>
 </tr>
 </tbody>
 </table>
 </div>
-<div class="fragment">
-<p>In the following we can see the average deviation of one prediction from the true value is about 20% uncertainty:</p>
-<pre><code>## [1] 0.2214431 0.2153835 0.2195734 0.2079853</code></pre>
-</div>
 <!---
+<div class="fragment">
+
+
+In the following we can see the average deviation of one prediction from the true value is about 20% uncertainty:
+
+
+```
+## [1] 0.2214431 0.2153835 0.2195734 0.2079853
+```
+</div>
+
 ## Regression - Data Set
 
 **Data Set Information:**
@@ -2074,11 +2086,11 @@ dif2000iter
 <section><section id="section-5" class="title-slide slide level1" data-background="files/stan.png" data-background-size="800px 600px"><h1></h1></section><section id="presettings" class="slide level2">
 <h2>Presettings</h2>
 <p><strong>Loading the package</strong></p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">library</span>(<span class="st">&quot;rstan&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">library</span>(<span class="st">&quot;rstan&quot;</span>)</span></code></pre></div>
 <p><strong>To estimate your model in parallel</strong></p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel<span class="op">::</span><span class="kw">detectCores</span>())</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">options</span>(<span class="dt">mc.cores =</span> parallel<span class="op">::</span><span class="kw">detectCores</span>())</span></code></pre></div>
 <p>Automatically save a bare version of a compiled Stan program to the hard disk so that it does not need to be recompiled</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="kw">rstan_options</span>(<span class="dt">auto_write =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">rstan_options</span>(<span class="dt">auto_write =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <p>You will need to run these commands each time you load the rstan library.</p>
 </section><section id="example-eight-schools---setup" class="slide level2">
 <h2>Example Eight Schools - SetUp</h2>
@@ -2106,37 +2118,34 @@ model {
 <p>In this Stan program, we let <code>theta</code> be a transformation of <code>mu</code>, <code>eta</code>, and <code>tau</code> instead of declaring <code>theta</code> in the <code>parameters</code> block, which allows the sampler will run more efficiently (<a href="http://mc-stan.org/documentation/case-studies/divergences_and_bias.html">see detailed explanation</a>). We can prepare the data (which typically is a named list) in R with:</p>
 </section><section id="example-eight-schools---run" class="slide level2">
 <h2>Example Eight Schools - Run</h2>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a>schools_dat &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">J =</span> <span class="dv">8</span>, </span>
-<span id="cb32-2"><a href="#cb32-2"></a>                    <span class="dt">y =</span> <span class="kw">c</span>(<span class="dv">28</span>,  <span class="dv">8</span>, <span class="dv">-3</span>,  <span class="dv">7</span>, <span class="dv">-1</span>,  <span class="dv">1</span>, <span class="dv">18</span>, <span class="dv">12</span>),</span>
-<span id="cb32-3"><a href="#cb32-3"></a>                    <span class="dt">sigma =</span> <span class="kw">c</span>(<span class="dv">15</span>, <span class="dv">10</span>, <span class="dv">16</span>, <span class="dv">11</span>,  <span class="dv">9</span>, <span class="dv">11</span>, <span class="dv">10</span>, <span class="dv">18</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>schools_dat &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">J =</span> <span class="dv">8</span>, </span>
+<span id="cb29-2"><a href="#cb29-2"></a>                    <span class="dt">y =</span> <span class="kw">c</span>(<span class="dv">28</span>,  <span class="dv">8</span>, <span class="dv">-3</span>,  <span class="dv">7</span>, <span class="dv">-1</span>,  <span class="dv">1</span>, <span class="dv">18</span>, <span class="dv">12</span>),</span>
+<span id="cb29-3"><a href="#cb29-3"></a>                    <span class="dt">sigma =</span> <span class="kw">c</span>(<span class="dv">15</span>, <span class="dv">10</span>, <span class="dv">16</span>, <span class="dv">11</span>,  <span class="dv">9</span>, <span class="dv">11</span>, <span class="dv">10</span>, <span class="dv">18</span>))</span></code></pre></div>
 <p>And we can get a fit with the following R command. Note that the argument to <code>file =</code> should point to where the file is on your file system unless you have put it in the working directory of R in which case the below will work.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a>fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">file =</span> <span class="st">&#39;schools.stan&#39;</span>, <span class="dt">data =</span> schools_dat)</span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>fit &lt;-<span class="st"> </span><span class="kw">stan</span>(<span class="dt">file =</span> <span class="st">&#39;schools.stan&#39;</span>, <span class="dt">data =</span> schools_dat)</span></code></pre></div>
 <p>The object <code>fit</code>, returned from function <code>stan</code> is an <a href="https://cran.r-project.org/package=rstan/vignettes/stanfit-objects.html">S4 object</a> of class <code>stanfit</code>.</p>
 </section><section id="example-eight-schools---evaluate" class="slide level2">
 <h2>Example Eight Schools - Evaluate</h2>
 <p>Methods such as <code>print</code>, <code>plot</code>, and <code>pairs</code> are associated with the fitted result so we can use the following code to check out the results in <code>fit</code>. <code>print</code> provides a summary for the parameter of the model as well as the log-posterior with name <code>lp__</code> (see the following example output). For more methods and details of class <code>stanfit</code>, see the help of class <code>stanfit</code>. We can use the <code>extract</code> function on <code>stanfit</code> objects to obtain the samples.</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">print</span>(fit)</span>
-<span id="cb34-2"><a href="#cb34-2"></a><span class="kw">plot</span>(fit)</span>
-<span id="cb34-3"><a href="#cb34-3"></a></span>
-<span id="cb34-4"><a href="#cb34-4"></a>la &lt;-<span class="st"> </span><span class="kw">extract</span>(fit, <span class="dt">permuted =</span> <span class="ot">TRUE</span>) <span class="co"># return a list of arrays </span></span>
-<span id="cb34-5"><a href="#cb34-5"></a>mu &lt;-<span class="st"> </span>la<span class="op">$</span>mu </span>
-<span id="cb34-6"><a href="#cb34-6"></a></span>
-<span id="cb34-7"><a href="#cb34-7"></a><span class="co">### return an array of three dimensions: iterations, chains, parameters </span></span>
-<span id="cb34-8"><a href="#cb34-8"></a>a &lt;-<span class="st"> </span><span class="kw">extract</span>(fit, <span class="dt">permuted =</span> <span class="ot">FALSE</span>) </span>
-<span id="cb34-9"><a href="#cb34-9"></a></span>
-<span id="cb34-10"><a href="#cb34-10"></a><span class="co">### use S3 functions on stanfit objects</span></span>
-<span id="cb34-11"><a href="#cb34-11"></a>a2 &lt;-<span class="st"> </span><span class="kw">as.array</span>(fit)</span>
-<span id="cb34-12"><a href="#cb34-12"></a>m &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit)</span>
-<span id="cb34-13"><a href="#cb34-13"></a>d &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(fit)</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="kw">print</span>(fit)</span>
+<span id="cb31-2"><a href="#cb31-2"></a><span class="kw">plot</span>(fit)</span>
+<span id="cb31-3"><a href="#cb31-3"></a></span>
+<span id="cb31-4"><a href="#cb31-4"></a>la &lt;-<span class="st"> </span><span class="kw">extract</span>(fit, <span class="dt">permuted =</span> <span class="ot">TRUE</span>) <span class="co"># return a list of arrays </span></span>
+<span id="cb31-5"><a href="#cb31-5"></a>mu &lt;-<span class="st"> </span>la<span class="op">$</span>mu </span>
+<span id="cb31-6"><a href="#cb31-6"></a></span>
+<span id="cb31-7"><a href="#cb31-7"></a><span class="co">### return an array of three dimensions: iterations, chains, parameters </span></span>
+<span id="cb31-8"><a href="#cb31-8"></a>a &lt;-<span class="st"> </span><span class="kw">extract</span>(fit, <span class="dt">permuted =</span> <span class="ot">FALSE</span>) </span>
+<span id="cb31-9"><a href="#cb31-9"></a></span>
+<span id="cb31-10"><a href="#cb31-10"></a><span class="co">### use S3 functions on stanfit objects</span></span>
+<span id="cb31-11"><a href="#cb31-11"></a>a2 &lt;-<span class="st"> </span><span class="kw">as.array</span>(fit)</span>
+<span id="cb31-12"><a href="#cb31-12"></a>m &lt;-<span class="st"> </span><span class="kw">as.matrix</span>(fit)</span>
+<span id="cb31-13"><a href="#cb31-13"></a>d &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(fit)</span></code></pre></div>
 </section><section id="example-eight-schools---plot-distributions" class="slide level2">
 <h2>Example Eight Schools - Plot Distributions</h2>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="kw">pairs</span>(fit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;tau&quot;</span>, <span class="st">&quot;lp__&quot;</span>))</span></code></pre></div>
-<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-76-1.png" /><!-- --></p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="kw">pairs</span>(fit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;tau&quot;</span>, <span class="st">&quot;lp__&quot;</span>))</span></code></pre></div>
+<p><img data-src="Presentation_files/figure-revealjs/unnamed-chunk-73-1.png" /><!-- --></p>
 </section></section>
 <section id="references" class="title-slide slide level1 unnumbered"><h1>References</h1><div id="refs" class="references" role="doc-bibliography">
-<div id="ref-betancourt2017">
-<p>Betancourt, Michael. 2017. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <em>arXiv Preprint arXiv:1701.02434</em>.</p>
-</div>
 <div id="ref-feng20">
 <p>Feng, Chi. 2016. “MCMC Demo.” <em>GitHub Repository</em>. <a href="https://github.com/chi-feng/mcmc-demo">https://github.com/chi-feng/mcmc-demo</a>; GitHub.</p>
 </div>
@@ -2145,6 +2154,12 @@ model {
 </div>
 <div id="ref-hoffman2014">
 <p>Hoffman, Matthew D, and Andrew Gelman. 2014. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” <em>J. Mach. Learn. Res.</em> 15 (1): 1593–1623.</p>
+</div>
+<div id="ref-nishio">
+<p>Nishio, Motohide, and Aisaku Arakawa. 2019. “Performance of Hamiltonian Monte Carlo and No-U-Turn Sampler for Estimating Genetic Parameters and Breeding Values.” <em>Genetics Selection Evolution</em> 51 (1): 73.</p>
+</div>
+<div id="ref-thomas">
+<p>Thomas, Samuel, and Wanzhu Tu. 2020. “Learning Hamiltonian Monte Carlo in R.” <em>arXiv Preprint arXiv:2006.16194</em>.</p>
 </div>
 </div></section>
     </div>

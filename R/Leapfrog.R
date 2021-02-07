@@ -8,9 +8,9 @@
 #'
 #' @return
 #'
-leapfrog <- function(position, momentum, stepsize, gradient) {
-  momentum <- momentum + (stepsize / 2) * gradient
+leapfrog <- function(position, momentum, stepsize) {
+  momentum <- momentum + (stepsize / 2) * gradient(position)
   position <- position + stepsize * momentum
-  momentum <- momentum + (stepsize / 2) * gradient
-  return(list("position" = position, "momentum" = momentum))
+  momentum <- momentum + (stepsize / 2) * gradient(position)
+  return(list("position" = as.numeric(position), "momentum" = as.numeric(momentum)))
 }
